@@ -7,15 +7,17 @@ for managing Cognigy Conversations via the v2.0 API endpoints.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from ..client import CognigyClient
     from ..async_client import AsyncCognigyClient
+    from ..client import CognigyClient
+
+import builtins
 
 from ..models.conversation import Conversation, ConversationMessage
+from ..pagination import paginate_async, paginate_sync
 from ..validation import build_list_params
-from ..pagination import paginate_sync, paginate_async
 
 
 class ConversationsResource:
@@ -40,17 +42,17 @@ class ConversationsResource:
 
     def list(
         self,
-        filter: Optional[str] = None,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
+        filter: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
         **kwargs: Any,
-    ) -> List[Conversation]:
+    ) -> builtins.list[Conversation]:
         """
         List conversations with optional filtering and pagination.
-        
+
         Retrieves a list of conversation summaries from the Cognigy API.
         Results can be filtered and paginated using the provided parameters.
 
@@ -62,7 +64,7 @@ class ConversationsResource:
             sort: Sort order string.
             next_cursor: Cursor for fetching the next page of results.
             previous_cursor: Cursor for fetching the previous page of results.
-        
+
         Returns:
             List of Conversation objects.
 
@@ -89,7 +91,7 @@ class ConversationsResource:
         items = paginate_sync(make_request, params, user_limit=limit)
         return [Conversation(**item) for item in items]
 
-    def get(self, session_id: str, **kwargs: Any) -> List[ConversationMessage]:
+    def get(self, session_id: str, **kwargs: Any) -> builtins.list[ConversationMessage]:
         """
         Get a conversation by session ID.
 
@@ -114,9 +116,7 @@ class ConversationsResource:
             >>> for msg in messages:
             ...     print(msg.source, msg.input_text)
         """
-        data = self._client._request(
-            "GET", f"/v2.0/conversations/{session_id}", **kwargs
-        )
+        data = self._client._request("GET", f"/v2.0/conversations/{session_id}", **kwargs)
         return [ConversationMessage(**item) for item in data.get("items", [])]
 
     def delete(self, session_id: str, **kwargs: Any) -> None:
@@ -166,17 +166,17 @@ class AsyncConversationsResource:
 
     async def list(
         self,
-        filter: Optional[str] = None,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
+        filter: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
         **kwargs: Any,
-    ) -> List[Conversation]:
+    ) -> builtins.list[Conversation]:
         """
         List conversations with optional filtering and pagination.
-        
+
         Retrieves a list of conversation summaries from the Cognigy API
         asynchronously. Results can be filtered and paginated using the
         provided parameters.
@@ -189,7 +189,7 @@ class AsyncConversationsResource:
             sort: Sort order string.
             next_cursor: Cursor for fetching the next page of results.
             previous_cursor: Cursor for fetching the previous page of results.
-        
+
         Returns:
             List of Conversation objects.
 
@@ -216,7 +216,7 @@ class AsyncConversationsResource:
         items = await paginate_async(make_request, params, user_limit=limit)
         return [Conversation(**item) for item in items]
 
-    async def get(self, session_id: str, **kwargs: Any) -> List[ConversationMessage]:
+    async def get(self, session_id: str, **kwargs: Any) -> builtins.list[ConversationMessage]:
         """
         Get a conversation by session ID.
 
@@ -241,9 +241,7 @@ class AsyncConversationsResource:
             >>> for msg in messages:
             ...     print(msg.source, msg.input_text)
         """
-        data = await self._client._request(
-            "GET", f"/v2.0/conversations/{session_id}", **kwargs
-        )
+        data = await self._client._request("GET", f"/v2.0/conversations/{session_id}", **kwargs)
         return [ConversationMessage(**item) for item in data.get("items", [])]
 
     async def delete(self, session_id: str, **kwargs: Any) -> None:
@@ -267,6 +265,4 @@ class AsyncConversationsResource:
         Example:
             >>> await client.conversations.delete("my-session-id")
         """
-        await self._client._request(
-            "DELETE", f"/v2.0/conversations/{session_id}", **kwargs
-        )
+        await self._client._request("DELETE", f"/v2.0/conversations/{session_id}", **kwargs)

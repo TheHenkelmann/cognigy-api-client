@@ -8,35 +8,37 @@ Knowledge Connectors integrate external data sources with Knowledge Stores.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from ..client import CognigyClient
     from ..async_client import AsyncCognigyClient
+    from ..client import CognigyClient
+import builtins
+
 from ..models.knowledge_connector import (
     KnowledgeConnector,
     KnowledgeConnectorCreate,
     KnowledgeConnectorUpdate,
 )
-from ..validation import validate_create_update_data, build_list_params
-from ..pagination import paginate_sync, paginate_async
+from ..pagination import paginate_async, paginate_sync
+from ..validation import build_list_params, validate_create_update_data
 
 
 class KnowledgeConnectorsResource:
     """
     Synchronous resource for managing Cognigy Knowledge Connectors.
-    
+
     Provides methods to list, create, read, update, and delete Knowledge Connectors
     using the Cognigy v2.0 API. Knowledge Connectors are scoped to a Knowledge Store.
-    
+
     Attributes:
         _client: The CognigyClient instance used for API requests.
     """
-    
+
     def __init__(self, client: CognigyClient) -> None:
         """
         Initialize the KnowledgeConnectorsResource.
-        
+
         Args:
             client: The CognigyClient instance to use for API requests.
         """
@@ -45,19 +47,19 @@ class KnowledgeConnectorsResource:
     def list(
         self,
         knowledge_store_id: str,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
         **kwargs: Any,
-    ) -> List[KnowledgeConnector]:
+    ) -> builtins.list[KnowledgeConnector]:
         """
         List Knowledge Connectors in a Knowledge Store.
-        
+
         Retrieves a list of Knowledge Connectors from the Cognigy API.
         Results can be paginated using the provided parameters.
-        
+
         Args:
             knowledge_store_id: The ObjectId of the Knowledge Store (24 hex characters).
             limit: Maximum number of connectors to return. If not specified,
@@ -70,14 +72,14 @@ class KnowledgeConnectorsResource:
                          Obtained from a previous list response.
             previous_cursor: Cursor for fetching the previous page of results.
                              Obtained from a previous list response.
-        
+
         Returns:
             List of KnowledgeConnector objects in the specified Knowledge Store.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, or server errors.
-        
+
         Example:
             >>> connectors = client.knowledge_connectors.list(
             ...     knowledge_store_id="507f1f77bcf86cd799439011"
@@ -108,24 +110,24 @@ class KnowledgeConnectorsResource:
     ) -> KnowledgeConnector:
         """
         Create a new Knowledge Connector.
-        
+
         Creates a new Knowledge Connector in the specified Knowledge Store.
-        
+
         Args:
             knowledge_store_id: The ObjectId of the Knowledge Store (24 hex characters).
             data: KnowledgeConnectorCreate model containing the connector configuration.
                   Fields include 'extension', 'version', 'type', 'config', 'name',
                   and 'schedule'.
-        
+
         Returns:
             The created KnowledgeConnector object with all fields populated by the API,
             including the generated 'id', timestamps, and creator information.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, validation errors, or server errors.
             ValidationError: If the KnowledgeConnectorCreate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import KnowledgeConnectorCreate, ConnectorSchedule
             >>> schedule = ConnectorSchedule(
@@ -165,24 +167,24 @@ class KnowledgeConnectorsResource:
     ) -> KnowledgeConnector:
         """
         Get a Knowledge Connector by ID.
-        
+
         Retrieves a single Knowledge Connector by its ObjectId.
-        
+
         Args:
             knowledge_store_id: The ObjectId of the Knowledge Store (24 hex characters).
             connector_id: The ObjectId of the Knowledge Connector to retrieve
                           (24 hex characters).
-        
+
         Returns:
             The KnowledgeConnector object with all available fields including
             'id', 'name', 'extension', 'version', 'type', 'config', 'schedule',
             'last_execution', 'last_execution_status', and metadata fields.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the connector not being found (404),
                              or server errors.
-        
+
         Example:
             >>> connector = client.knowledge_connectors.get(
             ...     knowledge_store_id="507f1f77bcf86cd799439011",
@@ -206,13 +208,13 @@ class KnowledgeConnectorsResource:
         *,
         fetch_updated: bool = True,
         **kwargs: Any,
-    ) -> Optional[KnowledgeConnector]:
+    ) -> KnowledgeConnector | None:
         """
         Update a Knowledge Connector.
-        
+
         Updates an existing Knowledge Connector with the provided data.
         Only fields that are set in the KnowledgeConnectorUpdate object will be modified.
-        
+
         Args:
             knowledge_store_id: The ObjectId of the Knowledge Store (24 hex characters).
             connector_id: The ObjectId of the Knowledge Connector to update
@@ -224,17 +226,17 @@ class KnowledgeConnectorsResource:
                            is performed and the updated connector is returned. If False,
                            no GET is performed and None is returned when the API
                            returns no body.
-        
+
         Returns:
             The updated KnowledgeConnector object with all fields reflecting the changes,
             or None if the API returned no body and fetch_updated=False.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the connector not being found (404),
                              validation errors, or server errors.
             ValidationError: If the KnowledgeConnectorUpdate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import KnowledgeConnectorUpdate, ConnectorSchedule
             >>> update_data = KnowledgeConnectorUpdate(
@@ -269,23 +271,23 @@ class KnowledgeConnectorsResource:
     ) -> None:
         """
         Delete a Knowledge Connector.
-        
+
         Permanently deletes a Knowledge Connector by its ObjectId.
         This action cannot be undone.
-        
+
         Args:
             knowledge_store_id: The ObjectId of the Knowledge Store (24 hex characters).
             connector_id: The ObjectId of the Knowledge Connector to delete
                           (24 hex characters).
-        
+
         Returns:
             None
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the connector not being found (404),
                              or server errors.
-        
+
         Example:
             >>> client.knowledge_connectors.delete(
             ...     knowledge_store_id="507f1f77bcf86cd799439011",
@@ -303,19 +305,19 @@ class KnowledgeConnectorsResource:
 class AsyncKnowledgeConnectorsResource:
     """
     Asynchronous resource for managing Cognigy Knowledge Connectors.
-    
+
     Provides async methods to list, create, read, update, and delete Knowledge Connectors
     using the Cognigy v2.0 API. Use this class with AsyncCognigyClient
     for non-blocking API operations. Knowledge Connectors are scoped to a Knowledge Store.
-    
+
     Attributes:
         _client: The AsyncCognigyClient instance used for API requests.
     """
-    
+
     def __init__(self, client: AsyncCognigyClient) -> None:
         """
         Initialize the AsyncKnowledgeConnectorsResource.
-        
+
         Args:
             client: The AsyncCognigyClient instance to use for API requests.
         """
@@ -324,19 +326,19 @@ class AsyncKnowledgeConnectorsResource:
     async def list(
         self,
         knowledge_store_id: str,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
         **kwargs: Any,
-    ) -> List[KnowledgeConnector]:
+    ) -> builtins.list[KnowledgeConnector]:
         """
         List Knowledge Connectors in a Knowledge Store.
-        
+
         Retrieves a list of Knowledge Connectors from the Cognigy API asynchronously.
         Results can be paginated using the provided parameters.
-        
+
         Args:
             knowledge_store_id: The ObjectId of the Knowledge Store (24 hex characters).
             limit: Maximum number of connectors to return. If not specified,
@@ -349,14 +351,14 @@ class AsyncKnowledgeConnectorsResource:
                          Obtained from a previous list response.
             previous_cursor: Cursor for fetching the previous page of results.
                              Obtained from a previous list response.
-        
+
         Returns:
             List of KnowledgeConnector objects in the specified Knowledge Store.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, or server errors.
-        
+
         Example:
             >>> connectors = await client.knowledge_connectors.list(
             ...     knowledge_store_id="507f1f77bcf86cd799439011"
@@ -387,24 +389,24 @@ class AsyncKnowledgeConnectorsResource:
     ) -> KnowledgeConnector:
         """
         Create a new Knowledge Connector.
-        
+
         Creates a new Knowledge Connector in the specified Knowledge Store asynchronously.
-        
+
         Args:
             knowledge_store_id: The ObjectId of the Knowledge Store (24 hex characters).
             data: KnowledgeConnectorCreate model containing the connector configuration.
                   Fields include 'extension', 'version', 'type', 'config', 'name',
                   and 'schedule'.
-        
+
         Returns:
             The created KnowledgeConnector object with all fields populated by the API,
             including the generated 'id', timestamps, and creator information.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, validation errors, or server errors.
             ValidationError: If the KnowledgeConnectorCreate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import KnowledgeConnectorCreate, ConnectorSchedule
             >>> schedule = ConnectorSchedule(
@@ -444,24 +446,24 @@ class AsyncKnowledgeConnectorsResource:
     ) -> KnowledgeConnector:
         """
         Get a Knowledge Connector by ID.
-        
+
         Retrieves a single Knowledge Connector by its ObjectId asynchronously.
-        
+
         Args:
             knowledge_store_id: The ObjectId of the Knowledge Store (24 hex characters).
             connector_id: The ObjectId of the Knowledge Connector to retrieve
                           (24 hex characters).
-        
+
         Returns:
             The KnowledgeConnector object with all available fields including
             'id', 'name', 'extension', 'version', 'type', 'config', 'schedule',
             'last_execution', 'last_execution_status', and metadata fields.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the connector not being found (404),
                              or server errors.
-        
+
         Example:
             >>> connector = await client.knowledge_connectors.get(
             ...     knowledge_store_id="507f1f77bcf86cd799439011",
@@ -485,13 +487,13 @@ class AsyncKnowledgeConnectorsResource:
         *,
         fetch_updated: bool = True,
         **kwargs: Any,
-    ) -> Optional[KnowledgeConnector]:
+    ) -> KnowledgeConnector | None:
         """
         Update a Knowledge Connector.
-        
+
         Updates an existing Knowledge Connector with the provided data asynchronously.
         Only fields that are set in the KnowledgeConnectorUpdate object will be modified.
-        
+
         Args:
             knowledge_store_id: The ObjectId of the Knowledge Store (24 hex characters).
             connector_id: The ObjectId of the Knowledge Connector to update
@@ -503,17 +505,17 @@ class AsyncKnowledgeConnectorsResource:
                            is performed and the updated connector is returned. If False,
                            no GET is performed and None is returned when the API
                            returns no body.
-        
+
         Returns:
             The updated KnowledgeConnector object with all fields reflecting the changes,
             or None if the API returned no body and fetch_updated=False.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the connector not being found (404),
                              validation errors, or server errors.
             ValidationError: If the KnowledgeConnectorUpdate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import KnowledgeConnectorUpdate, ConnectorSchedule
             >>> update_data = KnowledgeConnectorUpdate(
@@ -548,23 +550,23 @@ class AsyncKnowledgeConnectorsResource:
     ) -> None:
         """
         Delete a Knowledge Connector.
-        
+
         Permanently deletes a Knowledge Connector by its ObjectId asynchronously.
         This action cannot be undone.
-        
+
         Args:
             knowledge_store_id: The ObjectId of the Knowledge Store (24 hex characters).
             connector_id: The ObjectId of the Knowledge Connector to delete
                           (24 hex characters).
-        
+
         Returns:
             None
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the connector not being found (404),
                              or server errors.
-        
+
         Example:
             >>> await client.knowledge_connectors.delete(
             ...     knowledge_store_id="507f1f77bcf86cd799439011",

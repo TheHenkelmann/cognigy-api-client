@@ -7,14 +7,16 @@ the Cognigy v2.0 global search endpoint.
 
 from enum import Enum
 from typing import Optional
+
 from pydantic import Field, field_validator
+
 from .base import CognigyBaseModel
 
 
 class SearchResultType(str, Enum):
     """
     Types of resources that can appear in search results.
-    
+
     Attributes:
         ENDPOINT: An endpoint resource.
         EXTENSION: An extension resource.
@@ -28,6 +30,7 @@ class SearchResultType(str, Enum):
         PROJECT: A project resource.
         SNAPSHOT: A snapshot resource.
     """
+
     ENDPOINT = "endpoint"
     EXTENSION = "extension"
     FLOW = "flow"
@@ -44,7 +47,7 @@ class SearchResultType(str, Enum):
 class NLUConnectorSubType(str, Enum):
     """
     Subtypes for NLU connector resources.
-    
+
     Attributes:
         ALEXA: Amazon Alexa NLU.
         DIALOGFLOW: Google Dialogflow NLU.
@@ -58,6 +61,7 @@ class NLUConnectorSubType(str, Enum):
         GENERATIVE_AI: Generative AI-based NLU.
         LEX: Amazon Lex NLU.
     """
+
     ALEXA = "alexa"
     DIALOGFLOW = "dialogflow"
     DIALOGFLOW_BUILT_IN = "dialogflowBuiltIn"
@@ -74,7 +78,7 @@ class NLUConnectorSubType(str, Enum):
 class EndpointSubType(str, Enum):
     """
     Subtypes for endpoint resources.
-    
+
     Attributes:
         FACEBOOK: Facebook Messenger endpoint.
         ALEXA: Amazon Alexa endpoint.
@@ -115,6 +119,7 @@ class EndpointSubType(str, Enum):
         NICE_CXONE_AAH: NICE CXone AAH endpoint.
         ZOOM_CONTACT_CENTER: Zoom Contact Center endpoint.
     """
+
     FACEBOOK = "facebook"
     ALEXA = "alexa"
     SLACK = "slack"
@@ -158,7 +163,7 @@ class EndpointSubType(str, Enum):
 class GenerativeAIProviderSubType(str, Enum):
     """
     Subtypes for Generative AI provider resources.
-    
+
     Attributes:
         OPENAI: OpenAI provider.
         OPENAI_COMPATIBLE: OpenAI-compatible provider.
@@ -170,6 +175,7 @@ class GenerativeAIProviderSubType(str, Enum):
         AWS_BEDROCK: AWS Bedrock provider.
         MISTRAL: Mistral provider.
     """
+
     OPENAI = "openAI"
     OPENAI_COMPATIBLE = "openAICompatible"
     AZURE_OPENAI = "azureOpenAI"
@@ -184,10 +190,10 @@ class GenerativeAIProviderSubType(str, Enum):
 class SearchResult(CognigyBaseModel):
     """
     A single search result item from the global search endpoint.
-    
+
     Represents a resource found by the global search, which can be
     any of the supported resource types (endpoint, flow, project, etc.).
-    
+
     Attributes:
         id: The unique ObjectId of the resource (24 hex characters).
         name: The display name of the resource.
@@ -197,7 +203,7 @@ class SearchResult(CognigyBaseModel):
         project_id: The ObjectId of the project containing this resource.
             May be None for project-level resources.
         last_changed: Unix timestamp of the last modification time.
-    
+
     Example:
         >>> result = SearchResult(
         ...     _id="507f1f77bcf86cd799439011",
@@ -209,31 +215,21 @@ class SearchResult(CognigyBaseModel):
         >>> print(result.name)
         'My Flow'
     """
-    
-    name: str = Field(
-        ...,
-        description="The name of the resource"
-    )
-    type: SearchResultType = Field(
-        ...,
-        description="The type of the resource"
-    )
+
+    name: str = Field(..., description="The name of the resource")
+    type: SearchResultType = Field(..., description="The type of the resource")
     sub_type: Optional[str] = Field(
-        None,
-        alias="subType",
-        description="The subtype of the resource, varies by resource type"
+        None, alias="subType", description="The subtype of the resource, varies by resource type"
     )
     project_id: Optional[str] = Field(
-        None,
-        alias="projectId",
-        description="The project ObjectId containing this resource"
+        None, alias="projectId", description="The project ObjectId containing this resource"
     )
     last_changed: Optional[int] = Field(
         None,
         alias="lastChanged",
         description="Unix timestamp of last modification",
         ge=0,
-        le=2147483647
+        le=2147483647,
     )
 
     @field_validator("id", "project_id", mode="before")
@@ -241,13 +237,13 @@ class SearchResult(CognigyBaseModel):
     def validate_object_id(cls, v: Optional[str]) -> Optional[str]:
         """
         Validate that ObjectId fields contain exactly 24 lowercase hex characters.
-        
+
         Args:
             v: The value to validate.
-            
+
         Returns:
             The validated value or None if input was None.
-            
+
         Raises:
             ValueError: If the value is not a valid 24-character hex string.
         """
@@ -266,13 +262,13 @@ class SearchResult(CognigyBaseModel):
     def validate_timestamp(cls, v: Optional[int]) -> Optional[int]:
         """
         Validate that the Unix timestamp is within valid range.
-        
+
         Args:
             v: The timestamp value to validate.
-            
+
         Returns:
             The validated timestamp or None if input was None.
-            
+
         Raises:
             ValueError: If the timestamp is negative or exceeds max 32-bit value.
         """

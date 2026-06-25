@@ -8,10 +8,11 @@ Knowledge Connectors allow external data sources to be integrated with Knowledge
 
 import re
 from enum import Enum
-from typing import Optional, List, Dict, Any
-from pydantic import Field, field_validator
-from .base import CognigyBaseModel
+from typing import Any, Optional
 
+from pydantic import Field, field_validator
+
+from .base import CognigyBaseModel
 
 # Validation patterns
 OBJECT_ID_PATTERN = re.compile(r"^[a-z0-9]{24}$")
@@ -20,14 +21,14 @@ OBJECT_ID_PATTERN = re.compile(r"^[a-z0-9]{24}$")
 def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
     """
     Validate that a string matches MongoDB ObjectId format.
-    
+
     Args:
         value: The string value to validate.
         field_name: Name of the field for error messages.
-        
+
     Returns:
         The validated value if valid, None if value was None.
-        
+
     Raises:
         ValueError: If the value doesn't match the ObjectId pattern.
     """
@@ -42,14 +43,14 @@ def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
 def _validate_unix_timestamp(value: Optional[int], field_name: str) -> Optional[int]:
     """
     Validate Unix timestamp is within valid range.
-    
+
     Args:
         value: The timestamp value to validate.
         field_name: Name of the field for error messages.
-        
+
     Returns:
         The validated value if valid.
-        
+
     Raises:
         ValueError: If the timestamp is outside the valid range.
     """
@@ -63,7 +64,7 @@ def _validate_unix_timestamp(value: Optional[int], field_name: str) -> Optional[
 class KnowledgeConnectorExecutionStatus(str, Enum):
     """
     Execution status of a Knowledge Connector.
-    
+
     Attributes:
         NONE: No execution has occurred yet.
         QUEUED: Execution is queued and waiting to start.
@@ -71,6 +72,7 @@ class KnowledgeConnectorExecutionStatus(str, Enum):
         DONE: Execution completed successfully.
         ERROR: Execution failed with an error.
     """
+
     NONE = "none"
     QUEUED = "queued"
     ACTIVE = "active"
@@ -81,10 +83,10 @@ class KnowledgeConnectorExecutionStatus(str, Enum):
 class ConnectorSchedule(CognigyBaseModel):
     """
     Schedule configuration for automatic Knowledge Connector execution.
-    
+
     Defines when and how often a Knowledge Connector should automatically
     sync data from its external source.
-    
+
     Attributes:
         enabled: Whether scheduled execution is enabled.
         start: Unix timestamp for the start date/time to calculate scheduled execution.
@@ -94,34 +96,28 @@ class ConnectorSchedule(CognigyBaseModel):
         week_days: Days of the week to run the connector.
                    Uses zero-based indexing: Monday=0, Tuesday=1, ..., Sunday=6.
     """
-    id: Optional[str] = Field(None, alias="_id", exclude=True)  # Override base, schedules don't have IDs
-    
-    enabled: Optional[bool] = Field(
-        None,
-        description="Whether scheduled execution is enabled"
-    )
+
+    id: Optional[str] = Field(
+        None, alias="_id", exclude=True
+    )  # Override base, schedules don't have IDs
+
+    enabled: Optional[bool] = Field(None, description="Whether scheduled execution is enabled")
     start: Optional[int] = Field(
         None,
         description="Unix timestamp for start date/time to calculate scheduled execution",
         ge=0,
-        le=2147483647
+        le=2147483647,
     )
     hour: Optional[int] = Field(
-        None,
-        description="Hour of the day to start execution (0-23)",
-        ge=0,
-        le=23
+        None, description="Hour of the day to start execution (0-23)", ge=0, le=23
     )
     minute: Optional[int] = Field(
-        None,
-        description="Minute of the hour to start execution (0-59)",
-        ge=0,
-        le=59
+        None, description="Minute of the hour to start execution (0-59)", ge=0, le=59
     )
-    week_days: Optional[List[int]] = Field(
+    week_days: Optional[list[int]] = Field(
         None,
         alias="weekDays",
-        description="Days of the week to run (Monday=0, Tuesday=1, ..., Sunday=6)"
+        description="Days of the week to run (Monday=0, Tuesday=1, ..., Sunday=6)",
     )
 
     @field_validator("start")
@@ -132,7 +128,7 @@ class ConnectorSchedule(CognigyBaseModel):
 
     @field_validator("week_days")
     @classmethod
-    def validate_week_days(cls, v: Optional[List[int]]) -> Optional[List[int]]:
+    def validate_week_days(cls, v: Optional[list[int]]) -> Optional[list[int]]:
         """Validate all week_days are valid day indices (0-6)."""
         if v is not None:
             for i, day in enumerate(v):
@@ -147,10 +143,10 @@ class ConnectorSchedule(CognigyBaseModel):
 class KnowledgeConnector(CognigyBaseModel):
     """
     Response model for Knowledge Connector resources.
-    
+
     Represents a Cognigy Knowledge Connector that integrates external data sources
     with Knowledge Stores. Used for both GET single connector and GET list responses.
-    
+
     Attributes:
         id: MongoDB ObjectId of the connector (24 hex characters).
         extension: Name of the extension providing the connector (e.g., "confluence").
@@ -166,59 +162,42 @@ class KnowledgeConnector(CognigyBaseModel):
         last_changed: Unix timestamp when connector was last modified (0 to 2147483647).
         last_changed_by: ObjectId of user who last modified the connector.
     """
+
     extension: Optional[str] = Field(
-        None,
-        description="Name of the extension providing the connector (e.g., 'confluence')"
+        None, description="Name of the extension providing the connector (e.g., 'confluence')"
     )
     version: Optional[str] = Field(
-        None,
-        description="Version of the extension identifier (e.g., '1.1.0')"
+        None, description="Version of the extension identifier (e.g., '1.1.0')"
     )
     type: Optional[str] = Field(
-        None,
-        description="The Knowledge Connector type identifier within the extension"
+        None, description="The Knowledge Connector type identifier within the extension"
     )
-    config: Optional[Dict[str, Any]] = Field(
-        None,
-        description="Configuration object for the Knowledge Connector"
+    config: Optional[dict[str, Any]] = Field(
+        None, description="Configuration object for the Knowledge Connector"
     )
-    name: Optional[str] = Field(
-        None,
-        description="Human-readable name of the Knowledge Connector"
-    )
+    name: Optional[str] = Field(None, description="Human-readable name of the Knowledge Connector")
     schedule: Optional[ConnectorSchedule] = Field(
-        None,
-        description="Schedule configuration for automatic execution"
+        None, description="Schedule configuration for automatic execution"
     )
     last_execution: Optional[int] = Field(
         None,
         alias="lastExecution",
-        description="Unix timestamp when the last execution was triggered"
+        description="Unix timestamp when the last execution was triggered",
     )
     last_execution_status: Optional[KnowledgeConnectorExecutionStatus] = Field(
-        None,
-        alias="lastExecutionStatus",
-        description="Status of the last execution"
+        None, alias="lastExecutionStatus", description="Status of the last execution"
     )
     created_at: Optional[int] = Field(
-        None,
-        alias="createdAt",
-        description="Unix timestamp when connector was created"
+        None, alias="createdAt", description="Unix timestamp when connector was created"
     )
     created_by: Optional[str] = Field(
-        None,
-        alias="createdBy",
-        description="ObjectId of user who created the connector"
+        None, alias="createdBy", description="ObjectId of user who created the connector"
     )
     last_changed: Optional[int] = Field(
-        None,
-        alias="lastChanged",
-        description="Unix timestamp when connector was last modified"
+        None, alias="lastChanged", description="Unix timestamp when connector was last modified"
     )
     last_changed_by: Optional[str] = Field(
-        None,
-        alias="lastChangedBy",
-        description="ObjectId of user who last modified the connector"
+        None, alias="lastChangedBy", description="ObjectId of user who last modified the connector"
     )
 
     @field_validator("last_execution")
@@ -255,10 +234,10 @@ class KnowledgeConnector(CognigyBaseModel):
 class KnowledgeConnectorCreate(CognigyBaseModel):
     """
     Input model for creating a Knowledge Connector.
-    
+
     Contains the fields for creating a new Knowledge Connector
     via the POST /v2.0/knowledgestores/{knowledgeStoreId}/connectors endpoint.
-    
+
     Attributes:
         extension: Name of the extension providing the connector (e.g., "confluence").
         version: Version of the extension identifier (e.g., "1.1.0").
@@ -267,58 +246,53 @@ class KnowledgeConnectorCreate(CognigyBaseModel):
         name: Human-readable name of the Knowledge Connector.
         schedule: Schedule configuration for automatic execution.
     """
-    id: Optional[str] = Field(None, alias="_id", exclude=True)  # Override base, create doesn't have ID
-    
+
+    id: Optional[str] = Field(
+        None, alias="_id", exclude=True
+    )  # Override base, create doesn't have ID
+
     extension: Optional[str] = Field(
-        None,
-        description="Name of the extension providing the connector (e.g., 'confluence')"
+        None, description="Name of the extension providing the connector (e.g., 'confluence')"
     )
     version: Optional[str] = Field(
-        None,
-        description="Version of the extension identifier (e.g., '1.1.0')"
+        None, description="Version of the extension identifier (e.g., '1.1.0')"
     )
     type: Optional[str] = Field(
-        None,
-        description="The Knowledge Connector type identifier within the extension"
+        None, description="The Knowledge Connector type identifier within the extension"
     )
-    config: Optional[Dict[str, Any]] = Field(
-        None,
-        description="Configuration object for the Knowledge Connector"
+    config: Optional[dict[str, Any]] = Field(
+        None, description="Configuration object for the Knowledge Connector"
     )
-    name: Optional[str] = Field(
-        None,
-        description="Human-readable name of the Knowledge Connector"
-    )
+    name: Optional[str] = Field(None, description="Human-readable name of the Knowledge Connector")
     schedule: Optional[ConnectorSchedule] = Field(
-        None,
-        description="Schedule configuration for automatic execution"
+        None, description="Schedule configuration for automatic execution"
     )
 
 
 class KnowledgeConnectorUpdate(CognigyBaseModel):
     """
     Input model for updating a Knowledge Connector.
-    
+
     Contains the optional fields for updating an existing Knowledge Connector
     via the PATCH /v2.0/knowledgestores/{knowledgeStoreId}/connectors/{connectorId} endpoint.
     Only provided fields will be updated.
-    
+
     Attributes:
         config: New configuration object for the Knowledge Connector.
         name: New human-readable name for the Knowledge Connector.
         schedule: New schedule configuration for automatic execution.
     """
-    id: Optional[str] = Field(None, alias="_id", exclude=True)  # Override base, update doesn't use ID in body
-    
-    config: Optional[Dict[str, Any]] = Field(
-        None,
-        description="New configuration object for the Knowledge Connector"
+
+    id: Optional[str] = Field(
+        None, alias="_id", exclude=True
+    )  # Override base, update doesn't use ID in body
+
+    config: Optional[dict[str, Any]] = Field(
+        None, description="New configuration object for the Knowledge Connector"
     )
     name: Optional[str] = Field(
-        None,
-        description="New human-readable name for the Knowledge Connector"
+        None, description="New human-readable name for the Knowledge Connector"
     )
     schedule: Optional[ConnectorSchedule] = Field(
-        None,
-        description="New schedule configuration for automatic execution"
+        None, description="New schedule configuration for automatic execution"
     )

@@ -10,7 +10,6 @@ import pytest
 from cognigy import CognigyClient
 from cognigy.exceptions import CognigyAPIError, CognigyConfigurationError
 from cognigy.models.project import ProjectCreate
-
 from conftest import BASE_URL, make_sync_client, sample_project
 
 
@@ -64,11 +63,25 @@ class TestCognigyClientConfiguration:
     def test_exposes_all_resources(self):
         with CognigyClient(api_key="key", base_url=BASE_URL) as client:
             for attr in (
-                "projects", "flows", "nodes", "aiagents", "analytics",
-                "conversations", "knowledge_stores", "knowledge_chunks",
-                "knowledge_sources", "knowledge_connectors", "locales",
-                "logs", "tasks", "search", "snapshots", "extensions",
-                "functions", "llm", "connections",
+                "projects",
+                "flows",
+                "nodes",
+                "aiagents",
+                "analytics",
+                "conversations",
+                "knowledge_stores",
+                "knowledge_chunks",
+                "knowledge_sources",
+                "knowledge_connectors",
+                "locales",
+                "logs",
+                "tasks",
+                "search",
+                "snapshots",
+                "extensions",
+                "functions",
+                "llm",
+                "connections",
             ):
                 assert hasattr(client, attr), f"missing resource: {attr}"
 

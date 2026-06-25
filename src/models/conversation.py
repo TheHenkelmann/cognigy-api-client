@@ -6,25 +6,58 @@ list (summary) items and conversation detail (message) items per conversations v
 """
 
 import re
-from typing import Optional, List, Dict, Any
-from pydantic import Field, field_validator
-from .base import CognigyBaseModel
+from typing import Any, Optional
 
+from pydantic import Field, field_validator
+
+from .base import CognigyBaseModel
 
 # Validation patterns
 OBJECT_ID_PATTERN = re.compile(r"^[a-z0-9]{24}$")
 
 # Channel values from conversations_v2.0.md (GET list and GET single)
-CHANNEL_VALUES = frozenset({
-    "facebook", "alexa", "slack", "generic", "inject", "rest", "realtime",
-    "socket", "adminconsole", "webchat2", "dialogflow", "twilio", "twilio-sms",
-    "line", "intercom", "microsoftBotFramework", "microsoftTeams",
-    "sunshineConversations", "admin-webchat", "avaya", "nonConversational",
-    "voiceGateway2", "amazonLex", "workplace", "webhook", "abstractRest",
-    "userlike", "ringCentralEngage", "audioCodes", "bandwidth", "whatsapp",
-    "eightByEight", "genesysBotConnector", "niceCXOne", "agentAssistVoice",
-    "webchat3", "niceCXOneAAH", "zoomContactCenter",
-})
+CHANNEL_VALUES = frozenset(
+    {
+        "facebook",
+        "alexa",
+        "slack",
+        "generic",
+        "inject",
+        "rest",
+        "realtime",
+        "socket",
+        "adminconsole",
+        "webchat2",
+        "dialogflow",
+        "twilio",
+        "twilio-sms",
+        "line",
+        "intercom",
+        "microsoftBotFramework",
+        "microsoftTeams",
+        "sunshineConversations",
+        "admin-webchat",
+        "avaya",
+        "nonConversational",
+        "voiceGateway2",
+        "amazonLex",
+        "workplace",
+        "webhook",
+        "abstractRest",
+        "userlike",
+        "ringCentralEngage",
+        "audioCodes",
+        "bandwidth",
+        "whatsapp",
+        "eightByEight",
+        "genesysBotConnector",
+        "niceCXOne",
+        "agentAssistVoice",
+        "webchat3",
+        "niceCXOneAAH",
+        "zoomContactCenter",
+    }
+)
 
 # Message type enum (GET single item)
 MESSAGE_TYPE_VALUES = frozenset({"input", "output"})
@@ -137,11 +170,11 @@ class Conversation(CognigyBaseModel):
         alias="endTime",
         description="End time of the conversation",
     )
-    ratings: Optional[List[float]] = Field(
+    ratings: Optional[list[float]] = Field(
         None,
         description="List of rating numbers",
     )
-    rating_comments: Optional[List[str]] = Field(
+    rating_comments: Optional[list[str]] = Field(
         None,
         alias="ratingComments",
         description="List of rating comment strings",
@@ -237,7 +270,7 @@ class ConversationMessage(CognigyBaseModel):
         alias="inputText",
         description="Text of the input",
     )
-    input_data: Optional[Dict[str, Any]] = Field(
+    input_data: Optional[dict[str, Any]] = Field(
         None,
         alias="inputData",
         description="Arbitrary input data object",
@@ -264,7 +297,7 @@ class ConversationMessage(CognigyBaseModel):
         None,
         description="Channel name; must match API enum",
     )
-    timestamp: Optional[Dict[str, Any]] = Field(
+    timestamp: Optional[dict[str, Any]] = Field(
         None,
         description="Timestamp object",
     )
@@ -283,7 +316,7 @@ class ConversationMessage(CognigyBaseModel):
         alias="outputId",
         description="Output identifier",
     )
-    expires_at: Optional[Dict[str, Any]] = Field(
+    expires_at: Optional[dict[str, Any]] = Field(
         None,
         alias="expiresAt",
         description="Expiration timestamp object",
@@ -351,9 +384,7 @@ class ConversationMessage(CognigyBaseModel):
     def validate_type(cls, v: Optional[str]) -> Optional[str]:
         """Validate type is 'input' or 'output'."""
         if v is not None and v not in MESSAGE_TYPE_VALUES:
-            raise ValueError(
-                f"Invalid type: must be 'input' or 'output', got '{v}'"
-            )
+            raise ValueError(f"Invalid type: must be 'input' or 'output', got '{v}'")
         return v
 
     @field_validator("source")

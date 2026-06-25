@@ -7,9 +7,10 @@ response models and create/update request models.
 
 import re
 from typing import Optional
-from pydantic import Field, field_validator
-from .base import CognigyBaseModel
 
+from pydantic import Field, field_validator
+
+from .base import CognigyBaseModel
 
 # Validation patterns
 OBJECT_ID_PATTERN = re.compile(r"^[a-z0-9]{24}$")
@@ -77,38 +78,25 @@ class Function(CognigyBaseModel):
         last_changed: Unix timestamp when the function was last modified (0 to 2147483647).
         last_changed_by: ObjectId of the user who last modified the function.
     """
-    name: Optional[str] = Field(
-        None,
-        description="Human-readable name of the function"
-    )
-    code: Optional[str] = Field(
-        None,
-        description="JavaScript source code of the function"
-    )
+
+    name: Optional[str] = Field(None, description="Human-readable name of the function")
+    code: Optional[str] = Field(None, description="JavaScript source code of the function")
     is_disabled: Optional[bool] = Field(
-        None,
-        alias="isDisabled",
-        description="Whether the function is disabled"
+        None, alias="isDisabled", description="Whether the function is disabled"
     )
     created_at: Optional[int] = Field(
-        None,
-        alias="createdAt",
-        description="Unix timestamp when the function was created"
+        None, alias="createdAt", description="Unix timestamp when the function was created"
     )
     created_by: Optional[str] = Field(
-        None,
-        alias="createdBy",
-        description="ObjectId of the user who created the function"
+        None, alias="createdBy", description="ObjectId of the user who created the function"
     )
     last_changed: Optional[int] = Field(
-        None,
-        alias="lastChanged",
-        description="Unix timestamp when the function was last modified"
+        None, alias="lastChanged", description="Unix timestamp when the function was last modified"
     )
     last_changed_by: Optional[str] = Field(
         None,
         alias="lastChangedBy",
-        description="ObjectId of the user who last modified the function"
+        description="ObjectId of the user who last modified the function",
     )
 
     @field_validator("created_at")
@@ -158,23 +146,14 @@ class FunctionCreate(CognigyBaseModel):
         ...     is_disabled=False
         ... )
     """
+
     project_id: str = Field(
-        ...,
-        alias="projectId",
-        description="ObjectId of the project to create the function in"
+        ..., alias="projectId", description="ObjectId of the project to create the function in"
     )
-    name: Optional[str] = Field(
-        None,
-        description="Human-readable name of the function"
-    )
-    code: Optional[str] = Field(
-        None,
-        description="JavaScript source code of the function"
-    )
+    name: Optional[str] = Field(None, description="Human-readable name of the function")
+    code: Optional[str] = Field(None, description="JavaScript source code of the function")
     is_disabled: Optional[bool] = Field(
-        None,
-        alias="isDisabled",
-        description="Whether the function should be created as disabled"
+        None, alias="isDisabled", description="Whether the function should be created as disabled"
     )
 
     @field_validator("project_id")
@@ -210,16 +189,9 @@ class FunctionUpdate(CognigyBaseModel):
         ...     is_disabled=True
         ... )
     """
-    name: Optional[str] = Field(
-        None,
-        description="New human-readable name of the function"
-    )
-    code: Optional[str] = Field(
-        None,
-        description="New JavaScript source code of the function"
-    )
+
+    name: Optional[str] = Field(None, description="New human-readable name of the function")
+    code: Optional[str] = Field(None, description="New JavaScript source code of the function")
     is_disabled: Optional[bool] = Field(
-        None,
-        alias="isDisabled",
-        description="Whether the function should be disabled"
+        None, alias="isDisabled", description="Whether the function should be disabled"
     )

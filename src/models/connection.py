@@ -10,17 +10,16 @@ from __future__ import annotations
 
 import re
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Literal, Union
 
 from pydantic import ConfigDict, Field, field_validator
 
 from .base import CognigyBaseModel, CognigyCreateUpdateModel, to_camel
 
-
 OBJECT_ID_PATTERN = re.compile(r"^[a-z0-9]{24}$")
 
 
-def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
+def _validate_object_id(value: str | None, field_name: str) -> str | None:
     if value is not None and not OBJECT_ID_PATTERN.match(value):
         raise ValueError(
             f"Invalid ObjectId format for {field_name}: "
@@ -39,26 +38,24 @@ class ResourceLevel(str, Enum):
 class ConnectionSchemaRef(CognigyBaseModel):
     """Inline connection schema reference returned on list items."""
 
-    extension: Optional[str] = Field(
-        None, description="The package-name of the extension."
-    )
-    type: Optional[str] = Field(None, description="The type of connection.")
+    extension: str | None = Field(None, description="The package-name of the extension.")
+    type: str | None = Field(None, description="The type of connection.")
 
 
 class ConnectionListItem(CognigyBaseModel):
     """Metadata for one Connection in GET /v2.0/connections list responses."""
 
-    name: Optional[str] = None
-    is_deprecated: Optional[bool] = None
-    connection_schema: Optional[ConnectionSchemaRef] = None
-    created_at: Optional[int] = None
-    last_changed: Optional[int] = None
-    created_by: Optional[str] = None
-    last_changed_by: Optional[str] = None
+    name: str | None = None
+    is_deprecated: bool | None = None
+    connection_schema: ConnectionSchemaRef | None = None
+    created_at: int | None = None
+    last_changed: int | None = None
+    created_by: str | None = None
+    last_changed_by: str | None = None
 
     @field_validator("created_by", "last_changed_by")
     @classmethod
-    def _validate_object_ids(cls, v: Optional[str], info) -> Optional[str]:
+    def _validate_object_ids(cls, v: str | None, info) -> str | None:
         return _validate_object_id(v, info.field_name)
 
 
@@ -76,24 +73,24 @@ class Connection(CognigyBaseModel):
         alias_generator=to_camel,
     )
 
-    name: Optional[str] = None
-    is_deprecated: Optional[bool] = None
-    type: Optional[str] = None
-    extension: Optional[str] = None
-    fields: Optional[Dict[str, Any]] = Field(
+    name: str | None = None
+    is_deprecated: bool | None = None
+    type: str | None = None
+    extension: str | None = None
+    fields: dict[str, Any] | None = Field(
         None,
         description="Key-Value pairs matching the connection schema.",
     )
-    connection_schema: Optional[ConnectionSchemaRef] = None
-    resource_level: Optional[ResourceLevel] = None
-    created_at: Optional[int] = None
-    last_changed: Optional[int] = None
-    created_by: Optional[str] = None
-    last_changed_by: Optional[str] = None
+    connection_schema: ConnectionSchemaRef | None = None
+    resource_level: ResourceLevel | None = None
+    created_at: int | None = None
+    last_changed: int | None = None
+    created_by: str | None = None
+    last_changed_by: str | None = None
 
     @field_validator("created_by", "last_changed_by")
     @classmethod
-    def _validate_object_ids(cls, v: Optional[str], info) -> Optional[str]:
+    def _validate_object_ids(cls, v: str | None, info) -> str | None:
         return _validate_object_id(v, info.field_name)
 
 
@@ -114,34 +111,32 @@ class ConnectionCreate(CognigyCreateUpdateModel):
         ...,
         description="The extension providing the connection type (e.g. '@cognigy/basic-nodes').",
     )
-    fields: Dict[str, Any] = Field(
+    fields: dict[str, Any] = Field(
         ...,
         description="Key-Value pairs for the connection fields (1..10 entries).",
         min_length=1,
         max_length=10,
     )
-    is_deprecated: Optional[bool] = Field(
-        None, description="Mark the connection type as deprecated."
-    )
-    project_id: Optional[str] = Field(
+    is_deprecated: bool | None = Field(None, description="Mark the connection type as deprecated.")
+    project_id: str | None = Field(
         None,
         description="Project ObjectId. Required when not using resource_level='organisation'.",
     )
-    resource_level: Optional[ResourceLevel] = Field(
+    resource_level: ResourceLevel | None = Field(
         None,
         description="Set to ResourceLevel.ORGANISATION for organisation-scoped connections.",
     )
 
     @field_validator("project_id")
     @classmethod
-    def _validate_project_id(cls, v: Optional[str]) -> Optional[str]:
+    def _validate_project_id(cls, v: str | None) -> str | None:
         return _validate_object_id(v, "project_id")
 
 
 class ConnectionUpdate(CognigyCreateUpdateModel):
     """PATCH /v2.0/connections/{connectionId} body."""
 
-    fields: Dict[str, Any] = Field(
+    fields: dict[str, Any] = Field(
         ...,
         description="Key-Value pairs for the connection fields (1..10 entries).",
         min_length=1,
@@ -162,14 +157,14 @@ class ConnectionBatchCreateValue(CognigyCreateUpdateModel):
     name: str = Field(...)
     type: str = Field(...)
     extension: str = Field(...)
-    fields: Dict[str, Any] = Field(..., min_length=1, max_length=10)
-    is_deprecated: Optional[bool] = None
+    fields: dict[str, Any] = Field(..., min_length=1, max_length=10)
+    is_deprecated: bool | None = None
 
 
 class ConnectionBatchUpdateValue(CognigyCreateUpdateModel):
     """The ``value`` payload of a batch ``update`` operation."""
 
-    fields: Dict[str, Any] = Field(..., min_length=1, max_length=10)
+    fields: dict[str, Any] = Field(..., min_length=1, max_length=10)
 
 
 class ConnectionBatchDeleteOp(CognigyCreateUpdateModel):
@@ -216,7 +211,7 @@ ConnectionBatchOperation = Union[
 class ConnectionBatchRequest(CognigyCreateUpdateModel):
     """PATCH /v2.0/connections body (batch operations)."""
 
-    operations: List[ConnectionBatchOperation] = Field(
+    operations: list[ConnectionBatchOperation] = Field(
         ...,
         description="Ordered list of create/update/delete operations.",
     )
@@ -225,9 +220,9 @@ class ConnectionBatchRequest(CognigyCreateUpdateModel):
 class ConnectionBatchResult(CognigyBaseModel):
     """Response body of PATCH /v2.0/connections."""
 
-    created: Optional[List[str]] = None
-    updated: Optional[List[str]] = None
-    deleted: Optional[List[str]] = None
+    created: list[str] | None = None
+    updated: list[str] | None = None
+    deleted: list[str] | None = None
 
 
 class ConnectionSchemaItem(CognigyBaseModel):
@@ -245,16 +240,16 @@ class ConnectionSchemaItem(CognigyBaseModel):
         alias_generator=to_camel,
     )
 
-    extension: Optional[str] = Field(
+    extension: str | None = Field(
         None,
         description="The package name of the extension providing this schema.",
     )
-    created_at: Optional[int] = None
-    last_changed: Optional[int] = None
-    created_by: Optional[str] = None
-    last_changed_by: Optional[str] = None
+    created_at: int | None = None
+    last_changed: int | None = None
+    created_by: str | None = None
+    last_changed_by: str | None = None
 
     @field_validator("created_by", "last_changed_by")
     @classmethod
-    def _validate_object_ids(cls, v: Optional[str], info) -> Optional[str]:
+    def _validate_object_ids(cls, v: str | None, info) -> str | None:
         return _validate_object_id(v, info.field_name)

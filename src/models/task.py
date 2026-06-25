@@ -11,10 +11,11 @@ imports, exports, training operations, and other long-running processes.
 import re
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Dict, Any
-from pydantic import Field, field_validator
-from .base import CognigyBaseModel
+from typing import Any, Optional
 
+from pydantic import Field, field_validator
+
+from .base import CognigyBaseModel
 
 # Validation patterns
 OBJECT_ID_PATTERN = re.compile(r"^[a-z0-9]{24}$")
@@ -23,14 +24,14 @@ OBJECT_ID_PATTERN = re.compile(r"^[a-z0-9]{24}$")
 def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
     """
     Validate that a string matches MongoDB ObjectId format.
-    
+
     Args:
         value: The string value to validate.
         field_name: Name of the field for error messages.
-        
+
     Returns:
         The validated value if valid, None if value was None.
-        
+
     Raises:
         ValueError: If the value doesn't match the ObjectId pattern.
     """
@@ -45,14 +46,14 @@ def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
 def _validate_unix_timestamp(value: Optional[int], field_name: str) -> Optional[int]:
     """
     Validate Unix timestamp is within valid range.
-    
+
     Args:
         value: The timestamp value to validate.
         field_name: Name of the field for error messages.
-        
+
     Returns:
         The validated value if valid.
-        
+
     Raises:
         ValueError: If the timestamp is outside the valid range.
     """
@@ -66,9 +67,9 @@ def _validate_unix_timestamp(value: Optional[int], field_name: str) -> Optional[
 class TaskStatus(str, Enum):
     """
     Enumeration of possible task statuses.
-    
+
     Represents the lifecycle states of a task in the Cognigy system.
-    
+
     Attributes:
         QUEUED: Task is waiting in the queue to be processed.
         ACTIVE: Task is currently being executed.
@@ -77,6 +78,7 @@ class TaskStatus(str, Enum):
         CANCELLED: Task has been cancelled.
         ERROR: Task has failed with an error.
     """
+
     QUEUED = "queued"
     ACTIVE = "active"
     DONE = "done"
@@ -88,16 +90,16 @@ class TaskStatus(str, Enum):
 class Task(CognigyBaseModel):
     """
     Response model for Task resources.
-    
+
     Represents a Cognigy Task - an asynchronous operation that runs
     in the background such as imports, exports, training, etc.
     Used for both GET single task and GET list responses.
-    
+
     Attributes:
         id: MongoDB ObjectId of the task (24 hex characters).
         name: Name/type of the task describing the operation being performed.
         data: Parameters and configuration data for the task.
-        status: Current status of the task (queued, active, done, cancelling, 
+        status: Current status of the task (queued, active, done, cancelling,
                 cancelled, error).
         current_step: Current progress step number (for multi-step tasks).
         total_step: Total number of steps in the task.
@@ -108,7 +110,7 @@ class Task(CognigyBaseModel):
         last_changed: Unix timestamp when the task was last modified (0 to 2147483647).
         created_by: ObjectId of user who created the task (24 hex characters).
         last_changed_by: ObjectId of user who last modified the task (24 hex characters).
-    
+
     Example:
         >>> task = Task(
         ...     id="507f1f77bcf86cd799439011",
@@ -120,62 +122,40 @@ class Task(CognigyBaseModel):
         >>> print(f"Task {task.name}: {task.status.value} ({task.current_step}/{task.total_step})")
         Task import-flow: active (2/5)
     """
+
     name: Optional[str] = Field(
-        None,
-        description="Name/type of the task describing the operation being performed"
+        None, description="Name/type of the task describing the operation being performed"
     )
-    data: Optional[Dict[str, Any]] = Field(
-        None,
-        description="Parameters and configuration data for the task"
+    data: Optional[dict[str, Any]] = Field(
+        None, description="Parameters and configuration data for the task"
     )
-    status: Optional[TaskStatus] = Field(
-        None,
-        description="Current status of the task"
-    )
+    status: Optional[TaskStatus] = Field(None, description="Current status of the task")
     current_step: Optional[int] = Field(
-        None,
-        alias="currentStep",
-        description="Current progress step number (for multi-step tasks)"
+        None, alias="currentStep", description="Current progress step number (for multi-step tasks)"
     )
     total_step: Optional[int] = Field(
-        None,
-        alias="totalStep",
-        description="Total number of steps in the task"
+        None, alias="totalStep", description="Total number of steps in the task"
     )
     fail_reason: Optional[str] = Field(
-        None,
-        alias="failReason",
-        description="Error message if the task failed"
+        None, alias="failReason", description="Error message if the task failed"
     )
     last_run_at: Optional[datetime] = Field(
-        None,
-        alias="lastRunAt",
-        description="ISO 8601 datetime when the task last started running"
+        None, alias="lastRunAt", description="ISO 8601 datetime when the task last started running"
     )
     last_finished_at: Optional[datetime] = Field(
-        None,
-        alias="lastFinishedAt",
-        description="ISO 8601 datetime when the task last finished"
+        None, alias="lastFinishedAt", description="ISO 8601 datetime when the task last finished"
     )
     created_at: Optional[int] = Field(
-        None,
-        alias="createdAt",
-        description="Unix timestamp when the task was created"
+        None, alias="createdAt", description="Unix timestamp when the task was created"
     )
     last_changed: Optional[int] = Field(
-        None,
-        alias="lastChanged",
-        description="Unix timestamp when the task was last modified"
+        None, alias="lastChanged", description="Unix timestamp when the task was last modified"
     )
     created_by: Optional[str] = Field(
-        None,
-        alias="createdBy",
-        description="ObjectId of user who created the task"
+        None, alias="createdBy", description="ObjectId of user who created the task"
     )
     last_changed_by: Optional[str] = Field(
-        None,
-        alias="lastChangedBy",
-        description="ObjectId of user who last modified the task"
+        None, alias="lastChangedBy", description="ObjectId of user who last modified the task"
     )
 
     @field_validator("current_step", "total_step")
@@ -183,9 +163,7 @@ class Task(CognigyBaseModel):
     def validate_step_positive(cls, v: Optional[int], info) -> Optional[int]:
         """Validate step values are non-negative integers."""
         if v is not None and v < 0:
-            raise ValueError(
-                f"{info.field_name} must be a non-negative integer, got {v}"
-            )
+            raise ValueError(f"{info.field_name} must be a non-negative integer, got {v}")
         return v
 
     @field_validator("created_at")
@@ -216,11 +194,11 @@ class Task(CognigyBaseModel):
     def progress_percent(self) -> Optional[float]:
         """
         Calculate the task progress as a percentage.
-        
+
         Returns:
-            Progress percentage (0.0 to 100.0) if both current_step and 
+            Progress percentage (0.0 to 100.0) if both current_step and
             total_step are set and total_step > 0, otherwise None.
-        
+
         Example:
             >>> task.current_step = 3
             >>> task.total_step = 10
@@ -235,10 +213,10 @@ class Task(CognigyBaseModel):
     def is_complete(self) -> bool:
         """
         Check if the task has completed (successfully or with failure).
-        
+
         Returns:
             True if the task status is 'done', 'cancelled', or 'error'.
-        
+
         Example:
             >>> task.status = TaskStatus.DONE
             >>> task.is_complete
@@ -250,10 +228,10 @@ class Task(CognigyBaseModel):
     def is_running(self) -> bool:
         """
         Check if the task is currently running.
-        
+
         Returns:
             True if the task status is 'active' or 'cancelling'.
-        
+
         Example:
             >>> task.status = TaskStatus.ACTIVE
             >>> task.is_running

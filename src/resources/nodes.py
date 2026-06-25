@@ -7,23 +7,25 @@ for managing Cognigy Chart Nodes via the v2.0 API endpoints.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from ..client import CognigyClient
     from ..async_client import AsyncCognigyClient
-from ..models.node import Node, NodeCreate, NodeMove, NodeUpdate, NodeSearchResult, Chart
-from ..validation import validate_create_update_data, build_list_params
-from ..pagination import paginate_sync, paginate_async
+    from ..client import CognigyClient
+import builtins
+
+from ..models.node import Chart, Node, NodeCreate, NodeMove, NodeSearchResult, NodeUpdate
+from ..pagination import paginate_async, paginate_sync
+from ..validation import build_list_params, validate_create_update_data
 
 
-def _relations_map_from_chart_response(topology_data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+def _relations_map_from_chart_response(topology_data: dict[str, Any]) -> dict[str, dict[str, Any]]:
     """
     Build node_id -> {next, children} from GET /flows/{id}/chart ``relations``.
 
     Keys are normalized to ``str`` so they match ``_id`` / ``id`` from chart/nodes items.
     """
-    relations_map: Dict[str, Dict[str, Any]] = {}
+    relations_map: dict[str, dict[str, Any]] = {}
     for relation in topology_data.get("relations", []) or []:
         if not isinstance(relation, dict):
             continue
@@ -38,7 +40,7 @@ def _relations_map_from_chart_response(topology_data: Dict[str, Any]) -> Dict[st
     return relations_map
 
 
-def _config_node_ids_from_items(configs: List[Dict[str, Any]]) -> set[str]:
+def _config_node_ids_from_items(configs: list[dict[str, Any]]) -> set[str]:
     ids: set[str] = set()
     for cn in configs:
         raw = cn.get("_id") or cn.get("id")
@@ -50,26 +52,27 @@ def _config_node_ids_from_items(configs: List[Dict[str, Any]]) -> set[str]:
 class NodesResource:
     """
     Synchronous resource for managing Cognigy Chart Nodes.
-    
+
     Provides methods to list, create, read, update, and delete nodes
     using the Cognigy v2.0 Charts API. Also provides access to the
     full chart topology.
-    
+
     Attributes:
         _client: The CognigyClient instance used for API requests.
     """
-    
+
     def __init__(self, client: CognigyClient) -> None:
         """
         Initialize the NodesResource.
-        
+
         Args:
             client: The CognigyClient instance to use for API requests.
         """
         self._client = client
-        
-        
-    def search(self, flow_id: str, filter: str, preferred_locale_id: Optional[str] = None, **kwargs: Any) -> List[NodeSearchResult]:
+
+    def search(
+        self, flow_id: str, filter: str, preferred_locale_id: str | None = None, **kwargs: Any
+    ) -> builtins.list[NodeSearchResult]:
         """
         Search for nodes in a flow.
 
@@ -84,7 +87,7 @@ class NodesResource:
         Returns:
             List of NodeSearchResult (nodeId, nodeReferenceId, matches).
         """
-        params: Dict[str, Any] = {"filter": filter}
+        params: dict[str, Any] = {"filter": filter}
         if preferred_locale_id:
             params["preferredLocaleId"] = preferred_locale_id
         # print(f"search params: {params}")
@@ -97,10 +100,10 @@ class NodesResource:
         )
         return [NodeSearchResult(**item) for item in response.get("items", [])]
 
-    def get_all(self, flow_id: str, **kwargs: Any) -> List[Node]:
+    def get_all(self, flow_id: str, **kwargs: Any) -> builtins.list[Node]:
         """
         Get all nodes for a flow, merging topology and configuration.
-        
+
         Retrieves all nodes from a flow with their full configuration data
         and topology information (next_node_id, child_node_ids) merged.
         This method makes multiple API calls: paginated ``GET .../chart/nodes`` for
@@ -108,23 +111,23 @@ class NodesResource:
         all node pages so relations reflect the same revision as the node list (avoids
         stale topology right after creates/moves where an earlier chart read can miss
         new ``relations`` rows while ``chart/nodes`` already lists the new node).
-        
+
         Args:
             flow_id: ObjectId of the flow (24 hex characters).
-        
+
         Returns:
             List of Node objects with topology information merged.
-        
+
         Raises:
             CognigyAPIError: If the API request fails.
-        
+
         Example:
             >>> nodes = client.nodes.get_all("507f1f77bcf86cd799439011")
             >>> for node in nodes:
             ...     print(f"{node.label}: next={node.next_node_id}, children={node.child_node_ids}")
         """
         # 1. Fetch all node configs first (paginated)
-        nodes_configs: List[Dict[str, Any]] = []
+        nodes_configs: list[dict[str, Any]] = []
         next_cursor = None
 
         while True:
@@ -143,21 +146,17 @@ class NodesResource:
                 break
 
         # 2. Chart topology after node list so relations match committed chart state
-        topology_data = self._client._request(
-            "GET", f"/v2.0/flows/{flow_id}/chart", **kwargs
-        )
+        topology_data = self._client._request("GET", f"/v2.0/flows/{flow_id}/chart", **kwargs)
         relations_map = _relations_map_from_chart_response(topology_data)
 
         # 2b. If API returned a relation set missing rows for some listed nodes, refresh chart once
         listed = _config_node_ids_from_items(nodes_configs)
         if listed and listed - set(relations_map.keys()):
-            topology_data = self._client._request(
-                "GET", f"/v2.0/flows/{flow_id}/chart", **kwargs
-            )
+            topology_data = self._client._request("GET", f"/v2.0/flows/{flow_id}/chart", **kwargs)
             relations_map = _relations_map_from_chart_response(topology_data)
 
         # 3. Merge
-        result_nodes: List[Node] = []
+        result_nodes: list[Node] = []
         for config_node in nodes_configs:
             raw_nid = config_node.get("_id") or config_node.get("id")
             node_id = str(raw_nid) if raw_nid is not None else None
@@ -178,19 +177,19 @@ class NodesResource:
     def list(
         self,
         flow_id: str,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
         **kwargs: Any,
-    ) -> List[Node]:
+    ) -> builtins.list[Node]:
         """
         List nodes in a flow with pagination.
-        
+
         Retrieves nodes from the flow without topology merge. Uses cursor-based
         pagination. For nodes with topology information, use get_all() instead.
-        
+
         Args:
             flow_id: ObjectId of the flow (24 hex characters).
             limit: Maximum number of nodes to return. If not specified,
@@ -201,13 +200,13 @@ class NodesResource:
                          Obtained from a previous list response.
             previous_cursor: Cursor for the previous page of results.
                              Obtained from a previous list response.
-        
+
         Returns:
             List of Node objects.
-        
+
         Raises:
             CognigyAPIError: If the API request fails.
-        
+
         Example:
             >>> nodes = client.nodes.list("507f1f77bcf86cd799439011", limit=50)
             >>> for node in nodes:
@@ -232,27 +231,27 @@ class NodesResource:
         self,
         flow_id: str,
         node_id: str,
-        include_conversion_metadata: Optional[bool] = None,
+        include_conversion_metadata: bool | None = None,
         **kwargs: Any,
     ) -> Node:
         """
         Get a single node by ID.
-        
+
         Retrieves detailed information about a specific node in the flow.
-        
+
         Args:
             flow_id: ObjectId of the flow (24 hex characters).
             node_id: ObjectId of the node (24 hex characters).
             include_conversion_metadata: If True, includes conversion metadata
                                          in the response showing which fields
                                          were added, removed, or updated.
-        
+
         Returns:
             Node object with full node details.
-        
+
         Raises:
             CognigyAPIError: If the API request fails or node not found.
-        
+
         Example:
             >>> node = client.nodes.get("507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012")
             >>> print(f"Node type: {node.type}, Label: {node.label}")
@@ -260,12 +259,12 @@ class NodesResource:
         params = {}
         if include_conversion_metadata is not None:
             params["includeConversionMetadata"] = include_conversion_metadata
-        
+
         response = self._client._request(
             "GET",
             f"/v2.0/flows/{flow_id}/chart/nodes/{node_id}",
             params=params if params else None,
-            **kwargs
+            **kwargs,
         )
         # return response
         return Node(**response)
@@ -273,11 +272,11 @@ class NodesResource:
     def create(self, flow_id: str, data: NodeCreate, **kwargs: Any) -> Node:
         """
         Create a new node in a flow.
-        
+
         Creates a new chart node at the specified position in the flow.
         The node's position is determined by the target and mode parameters
         in the NodeCreate data.
-        
+
         Args:
             flow_id: ObjectId of the flow (24 hex characters).
             data: NodeCreate model with node configuration and placement.
@@ -285,15 +284,15 @@ class NodesResource:
                   is the ObjectId of the node to attach to, and 'mode'
                   determines the placement (append, prepend, appendChild,
                   prependChild, insertChildAt, insertAfter, insertBefore).
-        
+
         Returns:
             The created Node object with all fields populated
             by the API, including the generated 'id'.
-        
+
         Raises:
             CognigyAPIError: If the API request fails.
             ValidationError: If the NodeCreate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import NodeCreate
             >>> new_node = NodeCreate(
@@ -366,13 +365,13 @@ class NodesResource:
         *,
         fetch_updated: bool = True,
         **kwargs: Any,
-    ) -> Optional[Node]:
+    ) -> Node | None:
         """
         Update an existing node.
-        
+
         Updates the specified node with the provided data. Only fields that
         are set in the NodeUpdate object will be modified.
-        
+
         Args:
             flow_id: ObjectId of the flow (24 hex characters).
             node_id: ObjectId of the node to update (24 hex characters).
@@ -383,15 +382,15 @@ class NodesResource:
                            is performed and the updated node is returned. If False,
                            no GET is performed and None is returned when the API
                            returns no body.
-        
+
         Returns:
             The updated Node object with all fields reflecting
             the changes, or None if the API returned no body and fetch_updated=False.
-        
+
         Raises:
             CognigyAPIError: If the API request fails or node not found.
             ValidationError: If the NodeUpdate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import NodeUpdate
             >>> update_data = NodeUpdate(
@@ -421,20 +420,20 @@ class NodesResource:
     def delete(self, flow_id: str, node_id: str, **kwargs: Any) -> None:
         """
         Delete a node from a flow.
-        
+
         Permanently removes the specified node from the flow.
         This action cannot be undone.
-        
+
         Args:
             flow_id: ObjectId of the flow (24 hex characters).
             node_id: ObjectId of the node to delete (24 hex characters).
-        
+
         Returns:
             None
-        
+
         Raises:
             CognigyAPIError: If the API request fails or node not found.
-        
+
         Example:
             >>> client.nodes.delete("507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012")
             >>> # Node is now deleted
@@ -448,21 +447,21 @@ class NodesResource:
     def get_chart(self, flow_id: str, **kwargs: Any) -> Chart:
         """
         Get the full chart topology for a flow.
-        
+
         Retrieves the chart containing node summaries and their relationships.
         This provides a lightweight view of the flow structure without full
         node configurations. For full node details with topology merged,
         use get_all() instead.
-        
+
         Args:
             flow_id: ObjectId of the flow (24 hex characters).
-        
+
         Returns:
             Chart object containing nodes (summaries) and relations.
-        
+
         Raises:
             CognigyAPIError: If the API request fails.
-        
+
         Example:
             >>> chart = client.nodes.get_chart("507f1f77bcf86cd799439011")
             >>> print(f"Flow has {len(chart.nodes)} nodes")
@@ -476,25 +475,27 @@ class NodesResource:
 class AsyncNodesResource:
     """
     Asynchronous resource for managing Cognigy Chart Nodes.
-    
+
     Provides async methods to list, create, read, update, and delete nodes
     using the Cognigy v2.0 Charts API. Use this class with AsyncCognigyClient
     for non-blocking API operations.
-    
+
     Attributes:
         _client: The AsyncCognigyClient instance used for API requests.
     """
-    
+
     def __init__(self, client: AsyncCognigyClient) -> None:
         """
         Initialize the AsyncNodesResource.
-        
+
         Args:
             client: The AsyncCognigyClient instance to use for API requests.
         """
         self._client = client
 
-    async def search(self, flow_id: str, filter: str, preferred_locale_id: Optional[str] = None, **kwargs: Any) -> List[NodeSearchResult]:
+    async def search(
+        self, flow_id: str, filter: str, preferred_locale_id: str | None = None, **kwargs: Any
+    ) -> builtins.list[NodeSearchResult]:
         """
         Search for nodes in a flow.
 
@@ -509,7 +510,7 @@ class AsyncNodesResource:
         Returns:
             List of NodeSearchResult (nodeId, nodeReferenceId, matches).
         """
-        params: Dict[str, Any] = {"filter": filter}
+        params: dict[str, Any] = {"filter": filter}
         if preferred_locale_id:
             params["preferredLocaleId"] = preferred_locale_id
         response = await self._client._request(
@@ -520,7 +521,7 @@ class AsyncNodesResource:
         )
         return [NodeSearchResult(**item) for item in response.get("items", [])]
 
-    async def get_all(self, flow_id: str, **kwargs: Any) -> List[Node]:
+    async def get_all(self, flow_id: str, **kwargs: Any) -> builtins.list[Node]:
         """
         Get all nodes for a flow, merging topology and configuration.
 
@@ -528,7 +529,7 @@ class AsyncNodesResource:
         then ``GET .../chart`` so relations match the node list revision.
         """
         # 1. Fetch all node configs first (paginated)
-        nodes_configs: List[Dict[str, Any]] = []
+        nodes_configs: list[dict[str, Any]] = []
         next_cursor = None
 
         while True:
@@ -547,9 +548,7 @@ class AsyncNodesResource:
                 break
 
         # 2. Chart topology after node list
-        topology_data = await self._client._request(
-            "GET", f"/v2.0/flows/{flow_id}/chart", **kwargs
-        )
+        topology_data = await self._client._request("GET", f"/v2.0/flows/{flow_id}/chart", **kwargs)
         relations_map = _relations_map_from_chart_response(topology_data)
 
         # 2b. Second chart read if relations omit some listed node ids
@@ -561,7 +560,7 @@ class AsyncNodesResource:
             relations_map = _relations_map_from_chart_response(topology_data)
 
         # 3. Merge
-        result_nodes: List[Node] = []
+        result_nodes: list[Node] = []
         for config_node in nodes_configs:
             raw_nid = config_node.get("_id") or config_node.get("id")
             node_id = str(raw_nid) if raw_nid is not None else None
@@ -580,20 +579,20 @@ class AsyncNodesResource:
     async def list(
         self,
         flow_id: str,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
         **kwargs: Any,
-    ) -> List[Node]:
+    ) -> builtins.list[Node]:
         """
         List nodes in a flow with pagination.
-        
+
         Retrieves nodes from the flow asynchronously without topology merge.
         Uses cursor-based pagination. For nodes with topology information,
         use get_all() instead.
-        
+
         Args:
             flow_id: ObjectId of the flow (24 hex characters).
             limit: Maximum number of nodes to return. If not specified,
@@ -604,13 +603,13 @@ class AsyncNodesResource:
                          Obtained from a previous list response.
             previous_cursor: Cursor for the previous page of results.
                              Obtained from a previous list response.
-        
+
         Returns:
             List of Node objects.
-        
+
         Raises:
             CognigyAPIError: If the API request fails.
-        
+
         Example:
             >>> nodes = await client.nodes.list("507f1f77bcf86cd799439011", limit=50)
             >>> for node in nodes:
@@ -635,28 +634,28 @@ class AsyncNodesResource:
         self,
         flow_id: str,
         node_id: str,
-        include_conversion_metadata: Optional[bool] = None,
+        include_conversion_metadata: bool | None = None,
         **kwargs: Any,
     ) -> Node:
         """
         Get a single node by ID.
-        
+
         Retrieves detailed information about a specific node in the flow
         asynchronously.
-        
+
         Args:
             flow_id: ObjectId of the flow (24 hex characters).
             node_id: ObjectId of the node (24 hex characters).
             include_conversion_metadata: If True, includes conversion metadata
                                          in the response showing which fields
                                          were added, removed, or updated.
-        
+
         Returns:
             Node object with full node details.
-        
+
         Raises:
             CognigyAPIError: If the API request fails or node not found.
-        
+
         Example:
             >>> node = await client.nodes.get("507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012")
             >>> print(f"Node type: {node.type}, Label: {node.label}")
@@ -664,7 +663,7 @@ class AsyncNodesResource:
         params = {}
         if include_conversion_metadata is not None:
             params["includeConversionMetadata"] = include_conversion_metadata
-        
+
         response = await self._client._request(
             "GET",
             f"/v2.0/flows/{flow_id}/chart/nodes/{node_id}",
@@ -676,11 +675,11 @@ class AsyncNodesResource:
     async def create(self, flow_id: str, data: NodeCreate, **kwargs: Any) -> Node:
         """
         Create a new node in a flow.
-        
+
         Creates a new chart node at the specified position in the flow
         asynchronously. The node's position is determined by the target
         and mode parameters in the NodeCreate data.
-        
+
         Args:
             flow_id: ObjectId of the flow (24 hex characters).
             data: NodeCreate model with node configuration and placement.
@@ -688,15 +687,15 @@ class AsyncNodesResource:
                   is the ObjectId of the node to attach to, and 'mode'
                   determines the placement (append, prepend, appendChild,
                   prependChild, insertChildAt, insertAfter, insertBefore).
-        
+
         Returns:
             The created Node object with all fields populated
             by the API, including the generated 'id'.
-        
+
         Raises:
             CognigyAPIError: If the API request fails.
             ValidationError: If the NodeCreate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import NodeCreate
             >>> new_node = NodeCreate(
@@ -769,13 +768,13 @@ class AsyncNodesResource:
         *,
         fetch_updated: bool = True,
         **kwargs: Any,
-    ) -> Optional[Node]:
+    ) -> Node | None:
         """
         Update an existing node.
 
         Updates the specified node with the provided data asynchronously.
         Only fields that are set in the NodeUpdate object will be modified.
-        
+
         Args:
             flow_id: ObjectId of the flow (24 hex characters).
             node_id: ObjectId of the node to update (24 hex characters).
@@ -786,15 +785,15 @@ class AsyncNodesResource:
                            is performed and the updated node is returned. If False,
                            no GET is performed and None is returned when the API
                            returns no body.
-        
+
         Returns:
             The updated Node object with all fields reflecting
             the changes, or None if the API returned no body and fetch_updated=False.
-        
+
         Raises:
             CognigyAPIError: If the API request fails or node not found.
             ValidationError: If the NodeUpdate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import NodeUpdate
             >>> update_data = NodeUpdate(
@@ -824,20 +823,20 @@ class AsyncNodesResource:
     async def delete(self, flow_id: str, node_id: str, **kwargs: Any) -> None:
         """
         Delete a node from a flow.
-        
+
         Permanently removes the specified node from the flow asynchronously.
         This action cannot be undone.
-        
+
         Args:
             flow_id: ObjectId of the flow (24 hex characters).
             node_id: ObjectId of the node to delete (24 hex characters).
-        
+
         Returns:
             None
-        
+
         Raises:
             CognigyAPIError: If the API request fails or node not found.
-        
+
         Example:
             >>> await client.nodes.delete("507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012")
             >>> # Node is now deleted
@@ -851,21 +850,21 @@ class AsyncNodesResource:
     async def get_chart(self, flow_id: str, **kwargs: Any) -> Chart:
         """
         Get the full chart topology for a flow.
-        
+
         Retrieves the chart containing node summaries and their relationships
         asynchronously. This provides a lightweight view of the flow structure
         without full node configurations. For full node details with topology
         merged, use get_all() instead.
-        
+
         Args:
             flow_id: ObjectId of the flow (24 hex characters).
-        
+
         Returns:
             Chart object containing nodes (summaries) and relations.
-        
+
         Raises:
             CognigyAPIError: If the API request fails.
-        
+
         Example:
             >>> chart = await client.nodes.get_chart("507f1f77bcf86cd799439011")
             >>> print(f"Flow has {len(chart.nodes)} nodes")

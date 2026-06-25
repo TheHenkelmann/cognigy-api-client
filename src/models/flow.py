@@ -6,30 +6,30 @@ response models, create/update request models, and related nested models.
 """
 
 import re
-from typing import Optional, List, Dict, Any
-from pydantic import Field, field_validator
-from .base import CognigyBaseModel
+from typing import Any, Optional
 
+from pydantic import Field, field_validator
+
+from .base import CognigyBaseModel
 
 # Validation patterns
 OBJECT_ID_PATTERN = re.compile(r"^[a-z0-9]{24}$")
 UUID_PATTERN = re.compile(
-    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-    re.IGNORECASE
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE
 )
 
 
 def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
     """
     Validate that a string matches MongoDB ObjectId format.
-    
+
     Args:
         value: The string value to validate.
         field_name: Name of the field for error messages.
-        
+
     Returns:
         The validated value if valid, None if value was None.
-        
+
     Raises:
         ValueError: If the value doesn't match the ObjectId pattern.
     """
@@ -41,17 +41,17 @@ def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
     return value
 
 
-def _validate_object_id_list(values: Optional[List[str]], field_name: str) -> Optional[List[str]]:
+def _validate_object_id_list(values: Optional[list[str]], field_name: str) -> Optional[list[str]]:
     """
     Validate that all strings in a list match MongoDB ObjectId format.
-    
+
     Args:
         values: List of string values to validate.
         field_name: Name of the field for error messages.
-        
+
     Returns:
         The validated list if all items are valid.
-        
+
     Raises:
         ValueError: If any value doesn't match the ObjectId pattern.
     """
@@ -68,14 +68,14 @@ def _validate_object_id_list(values: Optional[List[str]], field_name: str) -> Op
 def _validate_unix_timestamp(value: Optional[int], field_name: str) -> Optional[int]:
     """
     Validate Unix timestamp is within valid range.
-    
+
     Args:
         value: The timestamp value to validate.
         field_name: Name of the field for error messages.
-        
+
     Returns:
         The validated value if valid.
-        
+
     Raises:
         ValueError: If the timestamp is outside the valid range.
     """
@@ -89,23 +89,26 @@ def _validate_unix_timestamp(value: Optional[int], field_name: str) -> Optional[
 class FeedbackReportInfo(CognigyBaseModel):
     """
     Information section of a feedback report.
-    
+
     Contains metrics about the training quality.
-    
+
     Attributes:
         f_score: F-score metric indicating model accuracy (0.0 to 1.0).
     """
-    f_score: Optional[float] = Field(None, alias="fScore", description="F-score metric (0.0 to 1.0)")
+
+    f_score: Optional[float] = Field(
+        None, alias="fScore", description="F-score metric (0.0 to 1.0)"
+    )
 
 
 class LowDataIntent(CognigyBaseModel):
     """
     Intent information in low data findings.
-    
+
     Contains details about intents that have insufficient training data.
     This information is included in feedback reports when the finding type
     is 'lowDataIntents'.
-    
+
     Attributes:
         intent_reference_id: Reference ID of the intent.
         intent_name: Human-readable name of the intent.
@@ -113,31 +116,20 @@ class LowDataIntent(CognigyBaseModel):
         flow_name: Name of the flow containing the intent.
         flow_id: MongoDB ObjectId of the flow (24 hex characters).
     """
+
     intent_reference_id: Optional[str] = Field(
-        None, 
-        alias="intentReferenceId",
-        description="Reference ID of the intent"
+        None, alias="intentReferenceId", description="Reference ID of the intent"
     )
     intent_name: Optional[str] = Field(
-        None, 
-        alias="intentName",
-        description="Human-readable name of the intent"
+        None, alias="intentName", description="Human-readable name of the intent"
     )
     intent_id: Optional[str] = Field(
-        None, 
-        alias="intentId",
-        description="MongoDB ObjectId of the intent"
+        None, alias="intentId", description="MongoDB ObjectId of the intent"
     )
     flow_name: Optional[str] = Field(
-        None, 
-        alias="flowName",
-        description="Name of the flow containing the intent"
+        None, alias="flowName", description="Name of the flow containing the intent"
     )
-    flow_id: Optional[str] = Field(
-        None, 
-        alias="flowId",
-        description="MongoDB ObjectId of the flow"
-    )
+    flow_id: Optional[str] = Field(None, alias="flowId", description="MongoDB ObjectId of the flow")
 
     @field_validator("intent_id")
     @classmethod
@@ -155,55 +147,52 @@ class LowDataIntent(CognigyBaseModel):
 class FeedbackReportFinding(CognigyBaseModel):
     """
     A finding from the feedback report.
-    
+
     Represents a single finding in the training feedback report.
     The type indicates what kind of finding it is, and for 'lowDataIntents'
     type, additional intent information is provided.
-    
+
     Attributes:
-        type: Type of finding. One of: 'poorAccuracy', 'fairAccuracy', 
+        type: Type of finding. One of: 'poorAccuracy', 'fairAccuracy',
               'goodAccuracy', 'lowDataIntents'.
-        intents: List of intents with low training data. Only present 
+        intents: List of intents with low training data. Only present
                  when type is 'lowDataIntents'.
     """
+
     type: Optional[str] = Field(
         None,
-        description="Type of finding: poorAccuracy, fairAccuracy, goodAccuracy, lowDataIntents"
+        description="Type of finding: poorAccuracy, fairAccuracy, goodAccuracy, lowDataIntents",
     )
-    intents: Optional[List[LowDataIntent]] = Field(
-        None,
-        description="List of intents with low data (only for lowDataIntents type)"
+    intents: Optional[list[LowDataIntent]] = Field(
+        None, description="List of intents with low data (only for lowDataIntents type)"
     )
 
 
 class FeedbackReport(CognigyBaseModel):
     """
     Training feedback report for a Flow.
-    
+
     Contains findings about the quality of intent training and
     metrics about model accuracy.
-    
+
     Attributes:
         findings: List of findings from the training analysis.
         info: Additional information including accuracy metrics.
     """
-    findings: Optional[List[FeedbackReportFinding]] = Field(
-        None,
-        description="List of findings from training analysis"
+
+    findings: Optional[list[FeedbackReportFinding]] = Field(
+        None, description="List of findings from training analysis"
     )
-    info: Optional[FeedbackReportInfo] = Field(
-        None,
-        description="Training metrics information"
-    )
+    info: Optional[FeedbackReportInfo] = Field(None, description="Training metrics information")
 
 
 class Flow(CognigyBaseModel):
     """
     Response model for Flow resources.
-    
+
     Represents a Cognigy Flow containing conversational logic.
     Used for both GET single flow and GET list responses.
-    
+
     Attributes:
         id: MongoDB ObjectId of the flow (24 hex characters).
         name: Name of the flow.
@@ -221,62 +210,42 @@ class Flow(CognigyBaseModel):
         last_changed: Unix timestamp when flow was last modified (0 to 2147483647).
         last_changed_by: ObjectId of user who last modified the flow.
     """
+
     name: str = Field(..., description="Name of the flow")
     description: Optional[str] = Field(None, description="Description of the flow")
     reference_id: Optional[str] = Field(
-        None, 
-        alias="referenceId",
-        description="UUID reference for the flow"
+        None, alias="referenceId", description="UUID reference for the flow"
     )
     intent_train_group_reference: Optional[str] = Field(
-        None, 
-        alias="intentTrainGroupReference",
-        description="ObjectId of the intent training group"
+        None, alias="intentTrainGroupReference", description="ObjectId of the intent training group"
     )
     feedback_report: Optional[FeedbackReport] = Field(
-        None, 
-        alias="feedbackReport",
-        description="Training feedback report"
+        None, alias="feedbackReport", description="Training feedback report"
     )
     is_training_out_of_date: Optional[bool] = Field(
-        None, 
-        alias="isTrainingOutOfDate",
-        description="Whether the flow needs retraining"
+        None, alias="isTrainingOutOfDate", description="Whether the flow needs retraining"
     )
-    context: Optional[Dict[str, Any]] = Field(
-        None,
-        description="Default context object for the flow"
+    context: Optional[dict[str, Any]] = Field(
+        None, description="Default context object for the flow"
     )
-    attached_flows: Optional[List[str]] = Field(
-        None, 
-        alias="attachedFlows",
-        description="List of ObjectIds of attached flows"
+    attached_flows: Optional[list[str]] = Field(
+        None, alias="attachedFlows", description="List of ObjectIds of attached flows"
     )
-    attached_lexicons: Optional[List[str]] = Field(
-        None, 
-        alias="attachedLexicons",
-        description="List of ObjectIds of attached lexicons"
+    attached_lexicons: Optional[list[str]] = Field(
+        None, alias="attachedLexicons", description="List of ObjectIds of attached lexicons"
     )
     img: Optional[str] = Field(None, description="Image URL for the flow")
     created_at: Optional[int] = Field(
-        None, 
-        alias="createdAt",
-        description="Unix timestamp when flow was created"
+        None, alias="createdAt", description="Unix timestamp when flow was created"
     )
     created_by: Optional[str] = Field(
-        None, 
-        alias="createdBy",
-        description="ObjectId of user who created the flow"
+        None, alias="createdBy", description="ObjectId of user who created the flow"
     )
     last_changed: Optional[int] = Field(
-        None, 
-        alias="lastChanged",
-        description="Unix timestamp when flow was last modified"
+        None, alias="lastChanged", description="Unix timestamp when flow was last modified"
     )
     last_changed_by: Optional[str] = Field(
-        None, 
-        alias="lastChangedBy",
-        description="ObjectId of user who last modified the flow"
+        None, alias="lastChangedBy", description="ObjectId of user who last modified the flow"
     )
 
     @field_validator("intent_train_group_reference")
@@ -287,13 +256,13 @@ class Flow(CognigyBaseModel):
 
     @field_validator("attached_flows")
     @classmethod
-    def validate_attached_flows(cls, v: Optional[List[str]]) -> Optional[List[str]]:
+    def validate_attached_flows(cls, v: Optional[list[str]]) -> Optional[list[str]]:
         """Validate all attached_flows match ObjectId format."""
         return _validate_object_id_list(v, "attached_flows")
 
     @field_validator("attached_lexicons")
     @classmethod
-    def validate_attached_lexicons(cls, v: Optional[List[str]]) -> Optional[List[str]]:
+    def validate_attached_lexicons(cls, v: Optional[list[str]]) -> Optional[list[str]]:
         """Validate all attached_lexicons match ObjectId format."""
         return _validate_object_id_list(v, "attached_lexicons")
 
@@ -325,10 +294,10 @@ class Flow(CognigyBaseModel):
 class FlowCreate(CognigyBaseModel):
     """
     Input model for creating a Flow.
-    
+
     Contains the required and optional fields for creating a new flow
     via the POST /v2.0/flows endpoint.
-    
+
     Attributes:
         name: Name of the flow (required).
         project_id: ObjectId of the project to create the flow in (required).
@@ -338,26 +307,20 @@ class FlowCreate(CognigyBaseModel):
         attached_lexicons: Optional list of ObjectIds of lexicons to attach.
         img: Optional image URL for the flow.
     """
+
     name: str = Field(..., description="Name of the flow")
     project_id: str = Field(
-        ...,
-        alias="projectId",
-        description="ObjectId of the project to create the flow in"
+        ..., alias="projectId", description="ObjectId of the project to create the flow in"
     )
     description: Optional[str] = Field(None, description="Description of the flow")
-    context: Optional[Dict[str, Any]] = Field(
-        None,
-        description="Default context object for the flow"
+    context: Optional[dict[str, Any]] = Field(
+        None, description="Default context object for the flow"
     )
-    attached_flows: Optional[List[str]] = Field(
-        None, 
-        alias="attachedFlows",
-        description="List of ObjectIds of flows to attach"
+    attached_flows: Optional[list[str]] = Field(
+        None, alias="attachedFlows", description="List of ObjectIds of flows to attach"
     )
-    attached_lexicons: Optional[List[str]] = Field(
-        None, 
-        alias="attachedLexicons",
-        description="List of ObjectIds of lexicons to attach"
+    attached_lexicons: Optional[list[str]] = Field(
+        None, alias="attachedLexicons", description="List of ObjectIds of lexicons to attach"
     )
     img: Optional[str] = Field(None, description="Image URL for the flow")
 
@@ -374,13 +337,13 @@ class FlowCreate(CognigyBaseModel):
 
     @field_validator("attached_flows")
     @classmethod
-    def validate_attached_flows(cls, v: Optional[List[str]]) -> Optional[List[str]]:
+    def validate_attached_flows(cls, v: Optional[list[str]]) -> Optional[list[str]]:
         """Validate all attached_flows match ObjectId format."""
         return _validate_object_id_list(v, "attached_flows")
 
     @field_validator("attached_lexicons")
     @classmethod
-    def validate_attached_lexicons(cls, v: Optional[List[str]]) -> Optional[List[str]]:
+    def validate_attached_lexicons(cls, v: Optional[list[str]]) -> Optional[list[str]]:
         """Validate all attached_lexicons match ObjectId format."""
         return _validate_object_id_list(v, "attached_lexicons")
 
@@ -388,11 +351,11 @@ class FlowCreate(CognigyBaseModel):
 class FlowUpdate(CognigyBaseModel):
     """
     Input model for updating a Flow.
-    
+
     Contains the optional fields for updating an existing flow
     via the PATCH /v2.0/flows/{flowId} endpoint. Only provided
     fields will be updated.
-    
+
     Attributes:
         name: New name for the flow.
         description: New description for the flow.
@@ -402,38 +365,32 @@ class FlowUpdate(CognigyBaseModel):
         img: New image URL for the flow.
         locale_id: ObjectId of the locale for localized updates.
     """
+
     name: Optional[str] = Field(None, description="New name for the flow")
     description: Optional[str] = Field(None, description="New description for the flow")
-    context: Optional[Dict[str, Any]] = Field(
-        None,
-        description="New default context object for the flow"
+    context: Optional[dict[str, Any]] = Field(
+        None, description="New default context object for the flow"
     )
-    attached_flows: Optional[List[str]] = Field(
-        None, 
-        alias="attachedFlows",
-        description="New list of ObjectIds of flows to attach"
+    attached_flows: Optional[list[str]] = Field(
+        None, alias="attachedFlows", description="New list of ObjectIds of flows to attach"
     )
-    attached_lexicons: Optional[List[str]] = Field(
-        None, 
-        alias="attachedLexicons",
-        description="New list of ObjectIds of lexicons to attach"
+    attached_lexicons: Optional[list[str]] = Field(
+        None, alias="attachedLexicons", description="New list of ObjectIds of lexicons to attach"
     )
     img: Optional[str] = Field(None, description="New image URL for the flow")
     locale_id: Optional[str] = Field(
-        None, 
-        alias="localeId",
-        description="ObjectId of the locale for localized updates"
+        None, alias="localeId", description="ObjectId of the locale for localized updates"
     )
 
     @field_validator("attached_flows")
     @classmethod
-    def validate_attached_flows(cls, v: Optional[List[str]]) -> Optional[List[str]]:
+    def validate_attached_flows(cls, v: Optional[list[str]]) -> Optional[list[str]]:
         """Validate all attached_flows match ObjectId format."""
         return _validate_object_id_list(v, "attached_flows")
 
     @field_validator("attached_lexicons")
     @classmethod
-    def validate_attached_lexicons(cls, v: Optional[List[str]]) -> Optional[List[str]]:
+    def validate_attached_lexicons(cls, v: Optional[list[str]]) -> Optional[list[str]]:
         """Validate all attached_lexicons match ObjectId format."""
         return _validate_object_id_list(v, "attached_lexicons")
 

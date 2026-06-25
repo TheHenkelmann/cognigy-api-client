@@ -1,8 +1,25 @@
 # Cognigy API Client (Python)
 
+[![PyPI version](https://img.shields.io/pypi/v/cognigy-api-client)](https://pypi.org/project/cognigy-api-client/)
+[![Python versions](https://img.shields.io/pypi/pyversions/cognigy-api-client)](https://pypi.org/project/cognigy-api-client/)
+[![License: MIT](https://img.shields.io/github/license/TheHenkelmann/cognigy-api-client)](LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/TheHenkelmann/cognigy-api-client/ci.yml?branch=master)](https://github.com/TheHenkelmann/cognigy-api-client/actions/workflows/ci.yml)
+[![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue)](https://github.com/TheHenkelmann/cognigy-api-client)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
 > **Disclaimer:** This is an **unofficial, community-maintained** Python client for the [Cognigy.AI](https://www.cognigy.com/) REST API. It is **not** affiliated with, endorsed by, or supported by Cognigy GmbH. For official client libraries, see [Cognigy's documentation](https://docs.cognigy.com/ai/for-developers/developers/client-libraries).
 
 A modern, strictly typed Python SDK for the Cognigy.AI REST API. It provides synchronous and asynchronous clients, Pydantic models for request/response validation, and resource-oriented access to projects, flows, nodes, AI agents, analytics, conversations, knowledge stores, locales, logs, tasks, search, and snapshots.
+
+**Features**
+
+- Strictly typed with Pydantic v2 models and `py.typed` marker
+- Sync (`CognigyClient`) and async (`AsyncCognigyClient`) clients
+- Resource-oriented API covering projects, flows, nodes, AI agents, knowledge stores, snapshots, and more
+- Pagination helpers, validation utilities, and structured error types
+- CI with linting, formatting, type checking, and tests across Python 3.9–3.13
+
+See the [changelog](CHANGELOG.md) for release history.
 
 ## Installation
 
@@ -24,8 +41,14 @@ from cognigy import CognigyClient
 git clone https://github.com/TheHenkelmann/cognigy-api-client.git
 cd cognigy-api-client
 pip install -e ".[dev]"
-pytest
+pytest --cov=cognigy
+ruff check src tests
+ruff format --check src tests
+MYPYPATH=.mypy_stubs mypy -p cognigy  # after: mkdir -p .mypy_stubs && ln -sfn ../src .mypy_stubs/cognigy
+pre-commit install
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
 ---
 

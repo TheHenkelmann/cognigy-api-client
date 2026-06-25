@@ -4,7 +4,8 @@ LLM resource for the Cognigy API (v2.0 ``/largelanguagemodels``).
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List, Optional, Union
+import builtins
+from typing import TYPE_CHECKING, Any, cast
 
 from pydantic import ValidationError
 
@@ -25,8 +26,8 @@ if TYPE_CHECKING:
 
 
 def _coerce_llm_create(
-    data: Union[LLMCreateForProject, LLMCreateForOrganisation, Any],
-) -> Union[LLMCreateForProject, LLMCreateForOrganisation]:
+    data: LLMCreateForProject | LLMCreateForOrganisation | Any,
+) -> LLMCreateForProject | LLMCreateForOrganisation:
     if isinstance(data, (LLMCreateForProject, LLMCreateForOrganisation)):
         return data
     raw = data.model_dump(by_alias=True) if hasattr(data, "model_dump") else dict(data)
@@ -49,16 +50,16 @@ class LLMResource:
 
     def list(
         self,
-        project_id: Optional[str] = None,
-        resource_level: Optional[str] = None,
-        filter: Optional[str] = None,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
+        project_id: str | None = None,
+        resource_level: str | None = None,
+        filter: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
         **kwargs: Any,
-    ) -> List[LLM]:
+    ) -> builtins.list[LLM]:
         extra: dict[str, Any] = {}
         if project_id is not None:
             extra["projectId"] = project_id
@@ -75,14 +76,17 @@ class LLMResource:
         )
 
         def make_request(p: dict[str, Any]) -> dict[str, Any]:
-            return self._client._request("GET", "/v2.0/largelanguagemodels", params=p, **kwargs)
+            return cast(
+                dict[str, Any],
+                self._client._request("GET", "/v2.0/largelanguagemodels", params=p, **kwargs),
+            )
 
         items = paginate_sync(make_request, params, user_limit=limit)
         return [LLM(**item) for item in items]
 
     def create(
         self,
-        data: Union[LLMCreateForProject, LLMCreateForOrganisation, Any],
+        data: LLMCreateForProject | LLMCreateForOrganisation | Any,
         **kwargs: Any,
     ) -> LLM:
         payload = _coerce_llm_create(data)
@@ -106,7 +110,7 @@ class LLMResource:
         *,
         fetch_updated: bool = True,
         **kwargs: Any,
-    ) -> Optional[LLM]:
+    ) -> LLM | None:
         validated = validate_create_update_data(data, LLMUpdate)
         response = self._client._request(
             "PATCH",
@@ -124,7 +128,7 @@ class LLMResource:
         self,
         llm_id: str,
         *,
-        force: Optional[bool] = None,
+        force: bool | None = None,
         **kwargs: Any,
     ) -> None:
         params = {}
@@ -155,16 +159,16 @@ class AsyncLLMResource:
 
     async def list(
         self,
-        project_id: Optional[str] = None,
-        resource_level: Optional[str] = None,
-        filter: Optional[str] = None,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
+        project_id: str | None = None,
+        resource_level: str | None = None,
+        filter: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
         **kwargs: Any,
-    ) -> List[LLM]:
+    ) -> builtins.list[LLM]:
         extra: dict[str, Any] = {}
         if project_id is not None:
             extra["projectId"] = project_id
@@ -181,8 +185,9 @@ class AsyncLLMResource:
         )
 
         async def make_request(p: dict[str, Any]) -> dict[str, Any]:
-            return await self._client._request(
-                "GET", "/v2.0/largelanguagemodels", params=p, **kwargs
+            return cast(
+                dict[str, Any],
+                await self._client._request("GET", "/v2.0/largelanguagemodels", params=p, **kwargs),
             )
 
         items = await paginate_async(make_request, params, user_limit=limit)
@@ -190,7 +195,7 @@ class AsyncLLMResource:
 
     async def create(
         self,
-        data: Union[LLMCreateForProject, LLMCreateForOrganisation, Any],
+        data: LLMCreateForProject | LLMCreateForOrganisation | Any,
         **kwargs: Any,
     ) -> LLM:
         payload = _coerce_llm_create(data)
@@ -214,7 +219,7 @@ class AsyncLLMResource:
         *,
         fetch_updated: bool = True,
         **kwargs: Any,
-    ) -> Optional[LLM]:
+    ) -> LLM | None:
         validated = validate_create_update_data(data, LLMUpdate)
         response = await self._client._request(
             "PATCH",
@@ -232,7 +237,7 @@ class AsyncLLMResource:
         self,
         llm_id: str,
         *,
-        force: Optional[bool] = None,
+        force: bool | None = None,
         **kwargs: Any,
     ) -> None:
         params = {}

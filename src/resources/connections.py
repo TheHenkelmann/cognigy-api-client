@@ -8,11 +8,14 @@ Cognigy Connections, their fields, batch operations, and Connection schemas.
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Any, List, Optional, Sequence, Union
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from ..async_client import AsyncCognigyClient
     from ..client import CognigyClient
+
+import builtins
 
 from ..exceptions import CognigyValidationError
 from ..models.connection import (
@@ -33,21 +36,19 @@ from ..models.connection import (
 from ..pagination import paginate_async, paginate_sync
 from ..validation import build_list_params, validate_create_update_data
 
-
 OBJECT_ID_PATTERN = re.compile(r"^[a-z0-9]{24}$")
 
 
 def _require_object_id(value: str, field_name: str) -> None:
     if not OBJECT_ID_PATTERN.match(value):
         raise CognigyValidationError(
-            f"{field_name} must be a 24-character lowercase hex ObjectId, "
-            f"got {value!r}."
+            f"{field_name} must be a 24-character lowercase hex ObjectId, got {value!r}."
         )
 
 
 def _resource_level_value(
-    resource_level: Optional[Union[str, ResourceLevel]],
-) -> Optional[str]:
+    resource_level: str | ResourceLevel | None,
+) -> str | None:
     if resource_level is None:
         return None
     if isinstance(resource_level, ResourceLevel):
@@ -60,9 +61,7 @@ def _resource_level_value(
                 f"Invalid resource_level {resource_level!r}. "
                 f"Expected one of: {[e.value for e in ResourceLevel]}."
             ) from exc
-    raise CognigyValidationError(
-        "resource_level must be a str or ResourceLevel enum."
-    )
+    raise CognigyValidationError("resource_level must be a str or ResourceLevel enum.")
 
 
 class ConnectionsResource:
@@ -73,16 +72,16 @@ class ConnectionsResource:
 
     def list(
         self,
-        project_id: Optional[str] = None,
-        filter: Optional[str] = None,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
-        resource_level: Optional[Union[str, ResourceLevel]] = None,
+        project_id: str | None = None,
+        filter: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
+        resource_level: str | ResourceLevel | None = None,
         **kwargs: Any,
-    ) -> List[ConnectionListItem]:
+    ) -> builtins.list[ConnectionListItem]:
         """List Connections with optional filtering and pagination."""
         if project_id is not None:
             _require_object_id(project_id, "project_id")
@@ -113,8 +112,7 @@ class ConnectionsResource:
         data = validate_create_update_data(data, ConnectionCreate)
         if data.project_id is None and data.resource_level != ResourceLevel.ORGANISATION:
             raise CognigyValidationError(
-                "Either project_id or resource_level=ResourceLevel.ORGANISATION "
-                "must be provided."
+                "Either project_id or resource_level=ResourceLevel.ORGANISATION must be provided."
             )
         response = self._client._request("POST", "/v2.0/connections", data=data, **kwargs)
         return Connection(**response)
@@ -122,9 +120,7 @@ class ConnectionsResource:
     def get(self, connection_id: str, **kwargs: Any) -> Connection:
         """Get a single Connection by id."""
         _require_object_id(connection_id, "connection_id")
-        response = self._client._request(
-            "GET", f"/v2.0/connections/{connection_id}", **kwargs
-        )
+        response = self._client._request("GET", f"/v2.0/connections/{connection_id}", **kwargs)
         return Connection(**response)
 
     def update(
@@ -134,7 +130,7 @@ class ConnectionsResource:
         *,
         fetch_updated: bool = True,
         **kwargs: Any,
-    ) -> Optional[Connection]:
+    ) -> Connection | None:
         """Update a Connection's fields (PATCH)."""
         _require_object_id(connection_id, "connection_id")
         data = validate_create_update_data(data, ConnectionUpdate)
@@ -150,21 +146,17 @@ class ConnectionsResource:
     def delete(self, connection_id: str, **kwargs: Any) -> None:
         """Delete a Connection."""
         _require_object_id(connection_id, "connection_id")
-        self._client._request(
-            "DELETE", f"/v2.0/connections/{connection_id}", **kwargs
-        )
+        self._client._request("DELETE", f"/v2.0/connections/{connection_id}", **kwargs)
 
     def batch(
         self,
         operations: Sequence[
-            Union[
-                ConnectionBatchCreateOp,
-                ConnectionBatchUpdateOp,
-                ConnectionBatchDeleteOp,
-                ConnectionBatchOperation,
-            ]
+            ConnectionBatchCreateOp
+            | ConnectionBatchUpdateOp
+            | ConnectionBatchDeleteOp
+            | ConnectionBatchOperation
         ],
-        project_id: Optional[str] = None,
+        project_id: str | None = None,
         **kwargs: Any,
     ) -> ConnectionBatchResult:
         """
@@ -190,10 +182,10 @@ class ConnectionsResource:
     def create_field(
         self,
         connection_id: str,
-        data: Optional[ConnectionFieldCreate] = None,
+        data: ConnectionFieldCreate | None = None,
         *,
-        key: Optional[str] = None,
-        value: Optional[str] = None,
+        key: str | None = None,
+        value: str | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -219,9 +211,7 @@ class ConnectionsResource:
             **kwargs,
         )
 
-    def delete_field(
-        self, connection_id: str, field_name: str, **kwargs: Any
-    ) -> None:
+    def delete_field(self, connection_id: str, field_name: str, **kwargs: Any) -> None:
         """
         Delete a Connection field.
 
@@ -238,15 +228,15 @@ class ConnectionsResource:
 
     def list_schemas(
         self,
-        project_id: Optional[str] = None,
-        filter: Optional[str] = None,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
+        project_id: str | None = None,
+        filter: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
         **kwargs: Any,
-    ) -> List[ConnectionSchemaItem]:
+    ) -> builtins.list[ConnectionSchemaItem]:
         """
         List Connection schemas.
 
@@ -264,9 +254,7 @@ class ConnectionsResource:
         )
 
         def make_request(p):
-            return self._client._request(
-                "GET", "/v2.0/connections/schemas", params=p, **kwargs
-            )
+            return self._client._request("GET", "/v2.0/connections/schemas", params=p, **kwargs)
 
         items = paginate_sync(make_request, params, user_limit=limit)
         return [ConnectionSchemaItem(**item) for item in items]
@@ -280,16 +268,16 @@ class AsyncConnectionsResource:
 
     async def list(
         self,
-        project_id: Optional[str] = None,
-        filter: Optional[str] = None,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
-        resource_level: Optional[Union[str, ResourceLevel]] = None,
+        project_id: str | None = None,
+        filter: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
+        resource_level: str | ResourceLevel | None = None,
         **kwargs: Any,
-    ) -> List[ConnectionListItem]:
+    ) -> builtins.list[ConnectionListItem]:
         """List Connections with optional filtering and pagination."""
         if project_id is not None:
             _require_object_id(project_id, "project_id")
@@ -310,9 +298,7 @@ class AsyncConnectionsResource:
         )
 
         async def make_request(p):
-            return await self._client._request(
-                "GET", "/v2.0/connections", params=p, **kwargs
-            )
+            return await self._client._request("GET", "/v2.0/connections", params=p, **kwargs)
 
         items = await paginate_async(make_request, params, user_limit=limit)
         return [ConnectionListItem(**item) for item in items]
@@ -322,12 +308,9 @@ class AsyncConnectionsResource:
         data = validate_create_update_data(data, ConnectionCreate)
         if data.project_id is None and data.resource_level != ResourceLevel.ORGANISATION:
             raise CognigyValidationError(
-                "Either project_id or resource_level=ResourceLevel.ORGANISATION "
-                "must be provided."
+                "Either project_id or resource_level=ResourceLevel.ORGANISATION must be provided."
             )
-        response = await self._client._request(
-            "POST", "/v2.0/connections", data=data, **kwargs
-        )
+        response = await self._client._request("POST", "/v2.0/connections", data=data, **kwargs)
         return Connection(**response)
 
     async def get(self, connection_id: str, **kwargs: Any) -> Connection:
@@ -345,7 +328,7 @@ class AsyncConnectionsResource:
         *,
         fetch_updated: bool = True,
         **kwargs: Any,
-    ) -> Optional[Connection]:
+    ) -> Connection | None:
         """Update a Connection's fields (PATCH)."""
         _require_object_id(connection_id, "connection_id")
         data = validate_create_update_data(data, ConnectionUpdate)
@@ -361,21 +344,17 @@ class AsyncConnectionsResource:
     async def delete(self, connection_id: str, **kwargs: Any) -> None:
         """Delete a Connection."""
         _require_object_id(connection_id, "connection_id")
-        await self._client._request(
-            "DELETE", f"/v2.0/connections/{connection_id}", **kwargs
-        )
+        await self._client._request("DELETE", f"/v2.0/connections/{connection_id}", **kwargs)
 
     async def batch(
         self,
         operations: Sequence[
-            Union[
-                ConnectionBatchCreateOp,
-                ConnectionBatchUpdateOp,
-                ConnectionBatchDeleteOp,
-                ConnectionBatchOperation,
-            ]
+            ConnectionBatchCreateOp
+            | ConnectionBatchUpdateOp
+            | ConnectionBatchDeleteOp
+            | ConnectionBatchOperation
         ],
-        project_id: Optional[str] = None,
+        project_id: str | None = None,
         **kwargs: Any,
     ) -> ConnectionBatchResult:
         """Perform batch create/update/delete operations on Connections."""
@@ -397,10 +376,10 @@ class AsyncConnectionsResource:
     async def create_field(
         self,
         connection_id: str,
-        data: Optional[ConnectionFieldCreate] = None,
+        data: ConnectionFieldCreate | None = None,
         *,
-        key: Optional[str] = None,
-        value: Optional[str] = None,
+        key: str | None = None,
+        value: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Create (or add) a Connection field."""
@@ -419,9 +398,7 @@ class AsyncConnectionsResource:
             **kwargs,
         )
 
-    async def delete_field(
-        self, connection_id: str, field_name: str, **kwargs: Any
-    ) -> None:
+    async def delete_field(self, connection_id: str, field_name: str, **kwargs: Any) -> None:
         """Delete a Connection field."""
         _require_object_id(connection_id, "connection_id")
         if not field_name:
@@ -434,15 +411,15 @@ class AsyncConnectionsResource:
 
     async def list_schemas(
         self,
-        project_id: Optional[str] = None,
-        filter: Optional[str] = None,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
+        project_id: str | None = None,
+        filter: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
         **kwargs: Any,
-    ) -> List[ConnectionSchemaItem]:
+    ) -> builtins.list[ConnectionSchemaItem]:
         """List Connection schemas."""
         if project_id is not None:
             _require_object_id(project_id, "project_id")

@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from cognigy.models.base import CognigyBaseModel, to_camel
+from cognigy.models.base import to_camel
 from cognigy.models.project import Project, ProjectCreate, ProjectUpdate
-
 from conftest import PROJECT_ID
 
 
@@ -47,6 +46,4 @@ class TestProjectModels:
 
     def test_project_rejects_invalid_color(self):
         with pytest.raises(ValueError, match="Invalid color"):
-            Project.model_validate(
-                {"_id": PROJECT_ID, "name": "Test", "color": "not-a-color"}
-            )
+            Project.model_validate({"_id": PROJECT_ID, "name": "Test", "color": "not-a-color"})

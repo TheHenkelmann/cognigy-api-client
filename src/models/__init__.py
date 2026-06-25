@@ -1,129 +1,20 @@
-from .project import (
-    Project,
-    ProjectCreate,
-    ProjectUpdate,
-    HandoverConfiguration,
-    CssColor,
-    CognigyColor,
-    ProjectLocale,
-    WhisperAssistConfiguration,
-)
-from .flow import (
-    Flow,
-    FlowCreate,
-    FlowUpdate,
-    FeedbackReport,
-    FeedbackReportFinding,
-    FeedbackReportInfo,
-    LowDataIntent,
-)
 from .aiagent import (
     AIAgent,
     AIAgentCreate,
-    AIAgentUpdate,
     AIAgentJob,
     AIAgentTool,
+    AIAgentUpdate,
     AIAgentValidateNameRequest,
+    SafetySettings,
     SpeakingStyle,
     VoiceConfigs,
-    SafetySettings,
-)
-from .node import (
-    Node,
-    NodeCreate,
-    NodeMove,
-    NodeUpdate,
-    NodeMock,
-    NodeSearchMatch,
-    NodeSearchResult,
-    Chart,
-    ChartNodeSummary,
-    ChartRelation,
 )
 from .analytics import (
     CallCounterMetric,
-    ConversationCounterMetric,
     ChannelConversations,
+    ConversationCounterMetric,
 )
-from .conversation import (
-    Conversation,
-    ConversationMessage,
-)
-from .knowledge_store import (
-    KnowledgeStore,
-    KnowledgeStoreCreate,
-    KnowledgeStoreUpdate,
-    KnowledgeStoreStatus,
-)
-from .knowledge_chunk import (
-    KnowledgeChunk,
-    KnowledgeChunkCreate,
-    KnowledgeChunkUpdate,
-)
-from .knowledge_source import (
-    KnowledgeSource,
-    KnowledgeSourceCreate,
-    KnowledgeSourceUpdate,
-    KnowledgeSourceType,
-    KnowledgeSourceStatus,
-    KnowledgeSourceMetaData,
-)
-from .knowledge_connector import (
-    KnowledgeConnector,
-    KnowledgeConnectorCreate,
-    KnowledgeConnectorUpdate,
-    KnowledgeConnectorExecutionStatus,
-    ConnectorSchedule,
-)
-from .locale import (
-    Locale,
-    LocaleCreate,
-    LocaleUpdate,
-    NluLanguage,
-)
-from .log import (
-    LogEntry,
-)
-from .task import (
-    Task,
-    TaskStatus,
-)
-from .search import (
-    SearchResult,
-    SearchResultType,
-    NLUConnectorSubType,
-    EndpointSubType,
-    GenerativeAIProviderSubType,
-)
-from .snapshot import (
-    Snapshot,
-    SnapshotCreate,
-    SnapshotResource,
-    SnapshotDownloadLink,
-    SnapshotRestoreRequest,
-    SnapshotDownloadLinkRequest,
-)
-from .extension import (
-    Extension,
-    ExtensionBackgroundTask,
-    ExtensionListItem,
-    ExtensionSettingsUpdate,
-    ExtensionUpdatePackageByUrl,
-    ExtensionUploadByUrl,
-)
-from .function import (
-    Function,
-    FunctionCreate,
-    FunctionUpdate,
-)
-from .llm import (
-    LLM,
-    LLMCreate,
-    LLMCreateForOrganisation,
-    LLMCreateForProject,
-    LLMTestResult,
-    LLMUpdate,
-)
+from .base import CognigyBaseModel
 from .connection import (
     Connection,
     ConnectionBatchCreateOp,
@@ -142,7 +33,116 @@ from .connection import (
     ConnectionUpdate,
     ResourceLevel,
 )
-from .base import CognigyBaseModel
+from .conversation import (
+    Conversation,
+    ConversationMessage,
+)
+from .extension import (
+    Extension,
+    ExtensionBackgroundTask,
+    ExtensionListItem,
+    ExtensionSettingsUpdate,
+    ExtensionUpdatePackageByUrl,
+    ExtensionUploadByUrl,
+)
+from .flow import (
+    FeedbackReport,
+    FeedbackReportFinding,
+    FeedbackReportInfo,
+    Flow,
+    FlowCreate,
+    FlowUpdate,
+    LowDataIntent,
+)
+from .function import (
+    Function,
+    FunctionCreate,
+    FunctionUpdate,
+)
+from .knowledge_chunk import (
+    KnowledgeChunk,
+    KnowledgeChunkCreate,
+    KnowledgeChunkUpdate,
+)
+from .knowledge_connector import (
+    ConnectorSchedule,
+    KnowledgeConnector,
+    KnowledgeConnectorCreate,
+    KnowledgeConnectorExecutionStatus,
+    KnowledgeConnectorUpdate,
+)
+from .knowledge_source import (
+    KnowledgeSource,
+    KnowledgeSourceCreate,
+    KnowledgeSourceMetaData,
+    KnowledgeSourceStatus,
+    KnowledgeSourceType,
+    KnowledgeSourceUpdate,
+)
+from .knowledge_store import (
+    KnowledgeStore,
+    KnowledgeStoreCreate,
+    KnowledgeStoreStatus,
+    KnowledgeStoreUpdate,
+)
+from .llm import (
+    LLM,
+    LLMCreate,
+    LLMCreateForOrganisation,
+    LLMCreateForProject,
+    LLMTestResult,
+    LLMUpdate,
+)
+from .locale import (
+    Locale,
+    LocaleCreate,
+    LocaleUpdate,
+    NluLanguage,
+)
+from .log import (
+    LogEntry,
+)
+from .node import (
+    Chart,
+    ChartNodeSummary,
+    ChartRelation,
+    Node,
+    NodeCreate,
+    NodeMock,
+    NodeMove,
+    NodeSearchMatch,
+    NodeSearchResult,
+    NodeUpdate,
+)
+from .project import (
+    CognigyColor,
+    CssColor,
+    HandoverConfiguration,
+    Project,
+    ProjectCreate,
+    ProjectLocale,
+    ProjectUpdate,
+    WhisperAssistConfiguration,
+)
+from .search import (
+    EndpointSubType,
+    GenerativeAIProviderSubType,
+    NLUConnectorSubType,
+    SearchResult,
+    SearchResultType,
+)
+from .snapshot import (
+    Snapshot,
+    SnapshotCreate,
+    SnapshotDownloadLink,
+    SnapshotDownloadLinkRequest,
+    SnapshotResource,
+    SnapshotRestoreRequest,
+)
+from .task import (
+    Task,
+    TaskStatus,
+)
 
 __all__ = [
     # Base

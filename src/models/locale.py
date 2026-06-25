@@ -8,9 +8,10 @@ response models, create/update request models, and the NLU language enum.
 import re
 from enum import Enum
 from typing import Optional
-from pydantic import Field, field_validator
-from .base import CognigyBaseModel
 
+from pydantic import Field, field_validator
+
+from .base import CognigyBaseModel
 
 # Validation patterns
 OBJECT_ID_PATTERN = re.compile(r"^[a-z0-9]{24}$")
@@ -19,14 +20,14 @@ OBJECT_ID_PATTERN = re.compile(r"^[a-z0-9]{24}$")
 def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
     """
     Validate that a string matches MongoDB ObjectId format.
-    
+
     Args:
         value: The string value to validate.
         field_name: Name of the field for error messages.
-        
+
     Returns:
         The validated value if valid, None if value was None.
-        
+
     Raises:
         ValueError: If the value doesn't match the ObjectId pattern.
     """
@@ -41,14 +42,14 @@ def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
 def _validate_unix_timestamp(value: Optional[int], field_name: str) -> Optional[int]:
     """
     Validate Unix timestamp is within valid range.
-    
+
     Args:
         value: The timestamp value to validate.
         field_name: Name of the field for error messages.
-        
+
     Returns:
         The validated value if valid.
-        
+
     Raises:
         ValueError: If the timestamp is outside the valid range.
     """
@@ -62,11 +63,11 @@ def _validate_unix_timestamp(value: Optional[int], field_name: str) -> Optional[
 class NluLanguage(str, Enum):
     """
     Supported NLU (Natural Language Understanding) languages.
-    
+
     These language codes follow the format: language-region (e.g., 'en-US').
     Each value represents a supported language for intent recognition
     and natural language processing in Cognigy.
-    
+
     Attributes:
         GE_GE: Georgian (Georgia)
         DA_DK: Danish (Denmark)
@@ -98,6 +99,7 @@ class NluLanguage(str, Enum):
         BN_IN: Bengali (India)
         TA_IN: Tamil (India)
     """
+
     GE_GE = "ge-GE"
     DA_DK = "da-DK"
     EN_AU = "en-AU"
@@ -132,11 +134,11 @@ class NluLanguage(str, Enum):
 class Locale(CognigyBaseModel):
     """
     Response model for Locale resources.
-    
+
     Represents a Cognigy Locale which defines a language configuration
     for a project. Locales are used to support multi-language virtual agents.
     Used for both GET single locale and GET list responses.
-    
+
     Attributes:
         id: MongoDB ObjectId of the locale (24 hex characters).
         name: Human-readable name of the locale (e.g., "English").
@@ -149,43 +151,30 @@ class Locale(CognigyBaseModel):
         last_changed: Unix timestamp when the locale was last modified (0 to 2147483647).
         last_changed_by: ObjectId of the user who last modified the locale.
     """
+
     name: Optional[str] = Field(
-        None,
-        description="Human-readable name of the locale (e.g., 'English')"
+        None, description="Human-readable name of the locale (e.g., 'English')"
     )
     primary: Optional[bool] = Field(
-        None,
-        description="Whether this is the primary/default locale for the project"
+        None, description="Whether this is the primary/default locale for the project"
     )
     nlu_language: Optional[NluLanguage] = Field(
-        None,
-        alias="nluLanguage",
-        description="The NLU language code for intent recognition"
+        None, alias="nluLanguage", description="The NLU language code for intent recognition"
     )
     fallback_locale_reference: Optional[str] = Field(
-        None,
-        alias="fallbackLocaleReference",
-        description="ObjectId of the fallback locale"
+        None, alias="fallbackLocaleReference", description="ObjectId of the fallback locale"
     )
     created_at: Optional[int] = Field(
-        None,
-        alias="createdAt",
-        description="Unix timestamp when the locale was created"
+        None, alias="createdAt", description="Unix timestamp when the locale was created"
     )
     created_by: Optional[str] = Field(
-        None,
-        alias="createdBy",
-        description="ObjectId of the user who created the locale"
+        None, alias="createdBy", description="ObjectId of the user who created the locale"
     )
     last_changed: Optional[int] = Field(
-        None,
-        alias="lastChanged",
-        description="Unix timestamp when the locale was last modified"
+        None, alias="lastChanged", description="Unix timestamp when the locale was last modified"
     )
     last_changed_by: Optional[str] = Field(
-        None,
-        alias="lastChangedBy",
-        description="ObjectId of the user who last modified the locale"
+        None, alias="lastChangedBy", description="ObjectId of the user who last modified the locale"
     )
 
     @field_validator("fallback_locale_reference")
@@ -222,10 +211,10 @@ class Locale(CognigyBaseModel):
 class LocaleCreate(CognigyBaseModel):
     """
     Input model for creating a Locale.
-    
+
     Contains the required and optional fields for creating a new locale
     via the POST /v2.0/locales endpoint.
-    
+
     Attributes:
         name: Human-readable name of the locale (e.g., "English").
         project_id: ObjectId of the project to create the locale in (required).
@@ -233,7 +222,7 @@ class LocaleCreate(CognigyBaseModel):
         nlu_language: The NLU language code for intent recognition.
         fallback_locale_reference: ObjectId of the fallback locale to use
             when content is not available in this locale.
-    
+
     Example:
         >>> from cognigy.models import LocaleCreate, NluLanguage
         >>> locale_data = LocaleCreate(
@@ -243,28 +232,21 @@ class LocaleCreate(CognigyBaseModel):
         ...     primary=False
         ... )
     """
+
     name: Optional[str] = Field(
-        None,
-        description="Human-readable name of the locale (e.g., 'English')"
+        None, description="Human-readable name of the locale (e.g., 'English')"
     )
     project_id: str = Field(
-        ...,
-        alias="projectId",
-        description="ObjectId of the project to create the locale in"
+        ..., alias="projectId", description="ObjectId of the project to create the locale in"
     )
     primary: Optional[bool] = Field(
-        None,
-        description="Whether this should be the primary/default locale"
+        None, description="Whether this should be the primary/default locale"
     )
     nlu_language: Optional[NluLanguage] = Field(
-        None,
-        alias="nluLanguage",
-        description="The NLU language code for intent recognition"
+        None, alias="nluLanguage", description="The NLU language code for intent recognition"
     )
     fallback_locale_reference: Optional[str] = Field(
-        None,
-        alias="fallbackLocaleReference",
-        description="ObjectId of the fallback locale"
+        None, alias="fallbackLocaleReference", description="ObjectId of the fallback locale"
     )
 
     @field_validator("project_id")
@@ -288,17 +270,17 @@ class LocaleCreate(CognigyBaseModel):
 class LocaleUpdate(CognigyBaseModel):
     """
     Input model for updating a Locale.
-    
+
     Contains the optional fields for updating an existing locale
     via the PATCH /v2.0/locales/{localeId} endpoint. Only provided
     fields will be updated.
-    
+
     Attributes:
         name: New human-readable name for the locale.
         primary: Whether this should be the primary/default locale.
         nlu_language: New NLU language code for intent recognition.
         fallback_locale_reference: ObjectId of the new fallback locale.
-    
+
     Example:
         >>> from cognigy.models import LocaleUpdate, NluLanguage
         >>> update_data = LocaleUpdate(
@@ -306,23 +288,16 @@ class LocaleUpdate(CognigyBaseModel):
         ...     nlu_language=NluLanguage.EN_GB
         ... )
     """
-    name: Optional[str] = Field(
-        None,
-        description="New human-readable name for the locale"
-    )
+
+    name: Optional[str] = Field(None, description="New human-readable name for the locale")
     primary: Optional[bool] = Field(
-        None,
-        description="Whether this should be the primary/default locale"
+        None, description="Whether this should be the primary/default locale"
     )
     nlu_language: Optional[NluLanguage] = Field(
-        None,
-        alias="nluLanguage",
-        description="New NLU language code for intent recognition"
+        None, alias="nluLanguage", description="New NLU language code for intent recognition"
     )
     fallback_locale_reference: Optional[str] = Field(
-        None,
-        alias="fallbackLocaleReference",
-        description="ObjectId of the new fallback locale"
+        None, alias="fallbackLocaleReference", description="ObjectId of the new fallback locale"
     )
 
     @field_validator("fallback_locale_reference")

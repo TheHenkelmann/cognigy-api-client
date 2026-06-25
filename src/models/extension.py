@@ -5,18 +5,17 @@ Extension models for the Cognigy API (v2.0 /extensions).
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import ConfigDict, Field, field_validator
 
 from .base import CognigyBaseModel, CognigyCreateUpdateModel, to_camel
 from .task import TaskStatus
 
-
 OBJECT_ID_PATTERN = re.compile(r"^[a-z0-9]{24}$")
 
 
-def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
+def _validate_object_id(value: str | None, field_name: str) -> str | None:
     if value is not None and not OBJECT_ID_PATTERN.match(value):
         raise ValueError(
             f"Invalid ObjectId format for {field_name}: "
@@ -28,20 +27,20 @@ def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
 class ExtensionListItem(CognigyBaseModel):
     """Metadata for one extension in GET /v2.0/extensions list responses."""
 
-    name: Optional[str] = None
-    label: Optional[str] = None
-    version: Optional[str] = None
-    image_url_token: Optional[str] = None
-    description: Optional[str] = None
-    trusted_code: Optional[bool] = None
-    created_at: Optional[int] = None
-    last_changed: Optional[int] = None
-    created_by: Optional[str] = None
-    last_changed_by: Optional[str] = None
+    name: str | None = None
+    label: str | None = None
+    version: str | None = None
+    image_url_token: str | None = None
+    description: str | None = None
+    trusted_code: bool | None = None
+    created_at: int | None = None
+    last_changed: int | None = None
+    created_by: str | None = None
+    last_changed_by: str | None = None
 
     @field_validator("created_by", "last_changed_by")
     @classmethod
-    def validate_object_ids(cls, v: Optional[str], info) -> Optional[str]:
+    def validate_object_ids(cls, v: str | None, info) -> str | None:
         return _validate_object_id(v, info.field_name)
 
 
@@ -59,30 +58,30 @@ class Extension(CognigyBaseModel):
         alias_generator=to_camel,
     )
 
-    name: Optional[str] = None
-    label: Optional[str] = None
-    version: Optional[str] = None
-    image_url_token: Optional[str] = None
-    description: Optional[str] = None
-    tags: Optional[List[str]] = None
-    author: Optional[str] = None
-    extension_type: Optional[str] = None
-    trusted_code: Optional[bool] = None
-    created_at: Optional[int] = None
-    last_changed: Optional[int] = None
-    created_by: Optional[str] = None
-    last_changed_by: Optional[str] = None
+    name: str | None = None
+    label: str | None = None
+    version: str | None = None
+    image_url_token: str | None = None
+    description: str | None = None
+    tags: list[str] | None = None
+    author: str | None = None
+    extension_type: str | None = None
+    trusted_code: bool | None = None
+    created_at: int | None = None
+    last_changed: int | None = None
+    created_by: str | None = None
+    last_changed_by: str | None = None
 
     @field_validator("created_by", "last_changed_by")
     @classmethod
-    def validate_object_ids(cls, v: Optional[str], info) -> Optional[str]:
+    def validate_object_ids(cls, v: str | None, info) -> str | None:
         return _validate_object_id(v, info.field_name)
 
 
 class ExtensionSettingsUpdate(CognigyCreateUpdateModel):
     """PATCH /v2.0/extensions/{extensionId} body (trusted code)."""
 
-    trusted_code: Optional[bool] = Field(
+    trusted_code: bool | None = Field(
         None,
         description="Whether to trust the code within this extension.",
     )
@@ -96,7 +95,7 @@ class ExtensionUploadByUrl(CognigyCreateUpdateModel):
         description="Project ObjectId (24 hex characters).",
     )
     url: str = Field(..., description="URL to a .tar.gz extension package.")
-    name: Optional[str] = Field(
+    name: str | None = Field(
         None,
         description="Optional name for task metadata.",
     )
@@ -128,10 +127,10 @@ class ExtensionUpdatePackageByUrl(CognigyCreateUpdateModel):
 class ExtensionBackgroundTask(CognigyBaseModel):
     """Task object returned with HTTP 202 from upload/update extension endpoints."""
 
-    status: Optional[TaskStatus] = None
-    type: Optional[str] = None
-    parameters: Optional[Dict[str, Any]] = None
-    last_changed_at: Optional[float] = Field(None, alias="lastChangedAt")
-    last_created_at: Optional[float] = Field(None, alias="lastCreatedAt")
-    current_step: Optional[int] = Field(None, alias="currentStep")
-    total_step: Optional[int] = Field(None, alias="totalStep")
+    status: TaskStatus | None = None
+    type: str | None = None
+    parameters: dict[str, Any] | None = None
+    last_changed_at: float | None = Field(None, alias="lastChangedAt")
+    last_created_at: float | None = Field(None, alias="lastCreatedAt")
+    current_step: int | None = Field(None, alias="currentStep")
+    total_step: int | None = Field(None, alias="totalStep")

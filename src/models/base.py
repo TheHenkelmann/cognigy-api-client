@@ -1,5 +1,6 @@
-from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 def to_camel(s: str) -> str:
@@ -14,6 +15,7 @@ class CognigyBaseModel(BaseModel):
     Handles the _id -> id mapping automatically.
     All snake_case fields get camelCase aliases when serializing for the API.
     """
+
     id: Optional[str] = Field(None, alias="_id")
     reference_id: Optional[str] = Field(None, alias="referenceId")
 

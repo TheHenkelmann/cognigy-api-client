@@ -2,10 +2,7 @@
 
 from __future__ import annotations
 
-import pytest
-
 from cognigy.pagination import paginate_async, paginate_sync
-
 from conftest import CURSOR
 
 

@@ -10,23 +10,25 @@ as containers for flows, intents, lexicons, endpoints, and other resources.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from ..client import CognigyClient
     from ..async_client import AsyncCognigyClient
+    from ..client import CognigyClient
+import builtins
+
 from ..models.project import Project, ProjectCreate, ProjectUpdate
-from ..validation import validate_create_update_data, build_list_params
-from ..pagination import paginate_sync, paginate_async
+from ..pagination import paginate_async, paginate_sync
+from ..validation import build_list_params, validate_create_update_data
 
 
 class ProjectsResource:
     """
     Synchronous resource for managing Cognigy Projects.
-    
+
     Provides methods to list, create, read, update, and delete projects
     using the Cognigy v2.0 API.
-    
+
     Attributes:
         _client: The CognigyClient instance used for API requests.
     """
@@ -34,7 +36,7 @@ class ProjectsResource:
     def __init__(self, client: CognigyClient) -> None:
         """
         Initialize the ProjectsResource.
-        
+
         Args:
             client: The CognigyClient instance to use for API requests.
         """
@@ -42,20 +44,20 @@ class ProjectsResource:
 
     def list(
         self,
-        filter: Optional[str] = None,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
+        filter: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
         **kwargs: Any,
-    ) -> List[Project]:
+    ) -> builtins.list[Project]:
         """
         List all projects with optional filtering and pagination.
-        
+
         Retrieves projects accessible to the authenticated user from the Cognigy API.
         Results can be filtered and paginated using the provided parameters.
-        
+
         Args:
             filter: Filter string for searching projects by name.
             limit: Maximum number of projects to return. If not specified,
@@ -68,14 +70,14 @@ class ProjectsResource:
                          Obtained from a previous list response.
             previous_cursor: Cursor for fetching the previous page of results.
                              Obtained from a previous list response.
-        
+
         Returns:
             List of Project objects representing all accessible projects.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, or server errors.
-        
+
         Example:
             >>> projects = client.projects.list()
             >>> for project in projects:
@@ -98,23 +100,23 @@ class ProjectsResource:
     def create(self, data: ProjectCreate, **kwargs: Any) -> Project:
         """
         Create a new project.
-        
+
         Creates a new project using the provided configuration data.
-        
+
         Args:
             data: ProjectCreate model containing the project configuration.
                   Must include 'name'. Optional fields include 'color',
                   'locale', and 'handover_configuration'.
-        
+
         Returns:
             The created Project object with all fields populated by the API,
             including the generated 'id', timestamps, and creator information.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, validation errors, or server errors.
             ValidationError: If the ProjectCreate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import ProjectCreate, ProjectLocale
             >>> new_project = ProjectCreate(
@@ -132,22 +134,22 @@ class ProjectsResource:
     def get(self, project_id: str, **kwargs: Any) -> Project:
         """
         Get a project by ID.
-        
+
         Retrieves a single project by its ObjectId.
-        
+
         Args:
             project_id: The ObjectId of the project to retrieve (24 hex characters).
-        
+
         Returns:
             The Project object with all available fields including 'id', 'name',
             'color', 'handover_configuration', 'live_agent_default_inbox',
             'primary_locale_reference', and metadata fields.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the project not being found (404),
                              or server errors.
-        
+
         Example:
             >>> project = client.projects.get("507f1f77bcf86cd799439011")
             >>> print(f"Project: {project.name}, Color: {project.color}")
@@ -162,13 +164,13 @@ class ProjectsResource:
         *,
         fetch_updated: bool = True,
         **kwargs: Any,
-    ) -> Optional[Project]:
+    ) -> Project | None:
         """
         Update a project.
-        
+
         Updates an existing project with the provided data. Only fields that
         are set in the ProjectUpdate object will be modified.
-        
+
         Args:
             project_id: The ObjectId of the project to update (24 hex characters).
             data: ProjectUpdate model containing the fields to update.
@@ -178,17 +180,17 @@ class ProjectsResource:
                            is performed and the updated project is returned. If False,
                            no GET is performed and None is returned when the API
                            returns no body.
-        
+
         Returns:
             The updated Project object with all fields reflecting the changes,
             or None if the API returned no body and fetch_updated=False.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the project not being found (404),
                              validation errors, or server errors.
             ValidationError: If the ProjectUpdate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import ProjectUpdate
             >>> update_data = ProjectUpdate(
@@ -199,7 +201,9 @@ class ProjectsResource:
             >>> print(project.name)  # "Updated Project Name"
         """
         data = validate_create_update_data(data, ProjectUpdate)
-        response = self._client._request("PATCH", f"/v2.0/projects/{project_id}", data=data, **kwargs)
+        response = self._client._request(
+            "PATCH", f"/v2.0/projects/{project_id}", data=data, **kwargs
+        )
         if response is None:
             if fetch_updated:
                 return self.get(project_id, **kwargs)
@@ -209,22 +213,22 @@ class ProjectsResource:
     def delete(self, project_id: str, **kwargs: Any) -> None:
         """
         Delete a project.
-        
+
         Permanently deletes a project by its ObjectId. This action cannot be undone.
         Deleting a project will also remove all associated resources including
         flows, intents, lexicons, and endpoints.
-        
+
         Args:
             project_id: The ObjectId of the project to delete (24 hex characters).
-        
+
         Returns:
             None
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the project not being found (404),
                              or server errors.
-        
+
         Example:
             >>> client.projects.delete("507f1f77bcf86cd799439011")
             >>> # Project and all its resources are now deleted
@@ -235,11 +239,11 @@ class ProjectsResource:
 class AsyncProjectsResource:
     """
     Asynchronous resource for managing Cognigy Projects.
-    
+
     Provides async methods to list, create, read, update, and delete projects
     using the Cognigy v2.0 API. Use this class with AsyncCognigyClient
     for non-blocking API operations.
-    
+
     Attributes:
         _client: The AsyncCognigyClient instance used for API requests.
     """
@@ -247,7 +251,7 @@ class AsyncProjectsResource:
     def __init__(self, client: AsyncCognigyClient) -> None:
         """
         Initialize the AsyncProjectsResource.
-        
+
         Args:
             client: The AsyncCognigyClient instance to use for API requests.
         """
@@ -255,21 +259,21 @@ class AsyncProjectsResource:
 
     async def list(
         self,
-        filter: Optional[str] = None,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
+        filter: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
         **kwargs: Any,
-    ) -> List[Project]:
+    ) -> builtins.list[Project]:
         """
         List all projects with optional filtering and pagination.
-        
+
         Retrieves projects accessible to the authenticated user from the Cognigy API
         asynchronously. Results can be filtered and paginated using the provided
         parameters.
-        
+
         Args:
             filter: Filter string for searching projects by name.
             limit: Maximum number of projects to return. If not specified,
@@ -282,14 +286,14 @@ class AsyncProjectsResource:
                          Obtained from a previous list response.
             previous_cursor: Cursor for fetching the previous page of results.
                              Obtained from a previous list response.
-        
+
         Returns:
             List of Project objects representing all accessible projects.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, or server errors.
-        
+
         Example:
             >>> projects = await client.projects.list()
             >>> for project in projects:
@@ -312,23 +316,23 @@ class AsyncProjectsResource:
     async def create(self, data: ProjectCreate, **kwargs: Any) -> Project:
         """
         Create a new project.
-        
+
         Creates a new project using the provided configuration data asynchronously.
-        
+
         Args:
             data: ProjectCreate model containing the project configuration.
                   Must include 'name'. Optional fields include 'color',
                   'locale', and 'handover_configuration'.
-        
+
         Returns:
             The created Project object with all fields populated by the API,
             including the generated 'id', timestamps, and creator information.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, validation errors, or server errors.
             ValidationError: If the ProjectCreate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import ProjectCreate, ProjectLocale
             >>> new_project = ProjectCreate(
@@ -346,22 +350,22 @@ class AsyncProjectsResource:
     async def get(self, project_id: str, **kwargs: Any) -> Project:
         """
         Get a project by ID.
-        
+
         Retrieves a single project by its ObjectId asynchronously.
-        
+
         Args:
             project_id: The ObjectId of the project to retrieve (24 hex characters).
-        
+
         Returns:
             The Project object with all available fields including 'id', 'name',
             'color', 'handover_configuration', 'live_agent_default_inbox',
             'primary_locale_reference', and metadata fields.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the project not being found (404),
                              or server errors.
-        
+
         Example:
             >>> project = await client.projects.get("507f1f77bcf86cd799439011")
             >>> print(f"Project: {project.name}, Color: {project.color}")
@@ -376,13 +380,13 @@ class AsyncProjectsResource:
         *,
         fetch_updated: bool = True,
         **kwargs: Any,
-    ) -> Optional[Project]:
+    ) -> Project | None:
         """
         Update a project.
 
         Updates an existing project with the provided data asynchronously.
         Only fields that are set in the ProjectUpdate object will be modified.
-        
+
         Args:
             project_id: The ObjectId of the project to update (24 hex characters).
             data: ProjectUpdate model containing the fields to update.
@@ -392,17 +396,17 @@ class AsyncProjectsResource:
                            is performed and the updated project is returned. If False,
                            no GET is performed and None is returned when the API
                            returns no body.
-        
+
         Returns:
             The updated Project object with all fields reflecting the changes,
             or None if the API returned no body and fetch_updated=False.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the project not being found (404),
                              validation errors, or server errors.
             ValidationError: If the ProjectUpdate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import ProjectUpdate
             >>> update_data = ProjectUpdate(
@@ -413,7 +417,9 @@ class AsyncProjectsResource:
             >>> print(project.name)  # "Updated Project Name"
         """
         data = validate_create_update_data(data, ProjectUpdate)
-        response = await self._client._request("PATCH", f"/v2.0/projects/{project_id}", data=data, **kwargs)
+        response = await self._client._request(
+            "PATCH", f"/v2.0/projects/{project_id}", data=data, **kwargs
+        )
         if response is None:
             if fetch_updated:
                 return await self.get(project_id, **kwargs)
@@ -423,22 +429,22 @@ class AsyncProjectsResource:
     async def delete(self, project_id: str, **kwargs: Any) -> None:
         """
         Delete a project.
-        
+
         Permanently deletes a project by its ObjectId asynchronously.
         This action cannot be undone. Deleting a project will also remove
         all associated resources including flows, intents, lexicons, and endpoints.
-        
+
         Args:
             project_id: The ObjectId of the project to delete (24 hex characters).
-        
+
         Returns:
             None
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the project not being found (404),
                              or server errors.
-        
+
         Example:
             >>> await client.projects.delete("507f1f77bcf86cd799439011")
             >>> # Project and all its resources are now deleted

@@ -7,14 +7,16 @@ for managing Cognigy Functions via the v2.0 API endpoints.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from ..client import CognigyClient
     from ..async_client import AsyncCognigyClient
+    from ..client import CognigyClient
+import builtins
+
 from ..models.function import Function, FunctionCreate, FunctionUpdate
-from ..validation import validate_create_update_data, build_list_params
-from ..pagination import paginate_sync, paginate_async
+from ..pagination import paginate_async, paginate_sync
+from ..validation import build_list_params, validate_create_update_data
 
 
 class FunctionsResource:
@@ -40,15 +42,15 @@ class FunctionsResource:
 
     def list(
         self,
-        project_id: Optional[str] = None,
-        filter: Optional[str] = None,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
+        project_id: str | None = None,
+        filter: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
         **kwargs: Any,
-    ) -> List[Function]:
+    ) -> builtins.list[Function]:
         """
         List functions with optional filtering and pagination.
 
@@ -161,7 +163,7 @@ class FunctionsResource:
         *,
         fetch_updated: bool = True,
         **kwargs: Any,
-    ) -> Optional[Function]:
+    ) -> Function | None:
         """
         Update a function.
 
@@ -258,15 +260,15 @@ class AsyncFunctionsResource:
 
     async def list(
         self,
-        project_id: Optional[str] = None,
-        filter: Optional[str] = None,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
+        project_id: str | None = None,
+        filter: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
         **kwargs: Any,
-    ) -> List[Function]:
+    ) -> builtins.list[Function]:
         """
         List functions with optional filtering and pagination.
 
@@ -380,7 +382,7 @@ class AsyncFunctionsResource:
         *,
         fetch_updated: bool = True,
         **kwargs: Any,
-    ) -> Optional[Function]:
+    ) -> Function | None:
         """
         Update a function.
 

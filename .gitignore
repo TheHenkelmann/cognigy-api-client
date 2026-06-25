@@ -14,6 +14,6 @@ build/
 htmlcov/
 .mypy_cache/
 .ruff_cache/
-.tox/
+.mypy_stubs/
 .tests/
 .dev/

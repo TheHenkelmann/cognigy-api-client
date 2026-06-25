@@ -1,17 +1,17 @@
 import logging
 import os
-import httpx
 from typing import Optional
-from .exceptions import CognigyConfigurationError, CognigyAPIError
+
+import httpx
+
+from .exceptions import CognigyAPIError, CognigyConfigurationError
 
 logger = logging.getLogger(__name__)
 
+
 class CognigyClient:
     def __init__(
-        self,
-        api_key: Optional[str] = None,
-        base_url: Optional[str] = None,
-        timeout: int = 60
+        self, api_key: Optional[str] = None, base_url: Optional[str] = None, timeout: int = 60
     ):
         self._api_key = api_key or os.getenv("COGNIGY_API_KEY")
         if not self._api_key:
@@ -19,42 +19,47 @@ class CognigyClient:
                 "API Key is required. Provide it as an argument or set COGNIGY_API_KEY environment variable."
             )
 
-        self._base_url = base_url or os.getenv("COGNIGY_BASE_URL", "https://api-app.cognigy.ai")
-        if "api-" not in self._base_url.lower() and "api.live.ai.telekomcloud.com" not in self._base_url.lower():
+        self._base_url: str = (
+            base_url or os.getenv("COGNIGY_BASE_URL") or "https://api-app.cognigy.ai"
+        )
+        if (
+            "api-" not in self._base_url.lower()
+            and "api.live.ai.telekomcloud.com" not in self._base_url.lower()
+        ):
             raise CognigyConfigurationError(
                 "Invalid base URL. Base URL must contain 'api-' in the domain name."
                 "Example: 'https://api-app.cognigy.ai' if you use the 'app.cognigy.ai' domain."
             )
-        
+
         self.http_client: httpx.Client = httpx.Client(
             base_url=self._base_url,
             headers={
                 "X-API-Key": self._api_key,
                 "Accept": "application/json",
             },
-            timeout=timeout
+            timeout=timeout,
         )
 
         # Initialize resources
-        from .resources.projects import ProjectsResource
-        from .resources.flows import FlowsResource
-        from .resources.nodes import NodesResource
         from .resources.aiagents import AIAgentsResource
         from .resources.analytics import AnalyticsResource
+        from .resources.connections import ConnectionsResource
         from .resources.conversations import ConversationsResource
-        from .resources.knowledge_stores import KnowledgeStoresResource
+        from .resources.extensions import ExtensionsResource
+        from .resources.flows import FlowsResource
+        from .resources.functions import FunctionsResource
         from .resources.knowledge_chunks import KnowledgeChunksResource
-        from .resources.knowledge_sources import KnowledgeSourcesResource
         from .resources.knowledge_connectors import KnowledgeConnectorsResource
+        from .resources.knowledge_sources import KnowledgeSourcesResource
+        from .resources.knowledge_stores import KnowledgeStoresResource
+        from .resources.llm import LLMResource
         from .resources.locales import LocalesResource
         from .resources.logs import LogsResource
-        from .resources.tasks import TasksResource
+        from .resources.nodes import NodesResource
+        from .resources.projects import ProjectsResource
         from .resources.search import SearchResource
         from .resources.snapshots import SnapshotsResource
-        from .resources.extensions import ExtensionsResource
-        from .resources.functions import FunctionsResource
-        from .resources.llm import LLMResource
-        from .resources.connections import ConnectionsResource
+        from .resources.tasks import TasksResource
 
         self.projects: ProjectsResource = ProjectsResource(self)
         self.flows: FlowsResource = FlowsResource(self)
@@ -105,7 +110,7 @@ class CognigyClient:
             raise CognigyAPIError(
                 message=f"API request failed: {response.reason_phrase}",
                 status_code=response.status_code,
-                response_body=response_body
+                response_body=response_body,
             )
         # Cognigy update endpoints may return 204 No Content or empty body
         if response.status_code == 204 or not response.text.strip():

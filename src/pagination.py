@@ -6,16 +6,16 @@ These helpers transparently fetch multiple pages so callers can request any
 number of items (or all items) without worrying about the server cap.
 """
 
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Optional
 
 _SERVER_PAGE_LIMIT = 100
 
 
 def paginate_sync(
-    make_request: Callable[[Dict[str, Any]], Dict[str, Any]],
-    base_params: Dict[str, Any],
+    make_request: Callable[[dict[str, Any]], dict[str, Any]],
+    base_params: dict[str, Any],
     user_limit: Optional[int] = None,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Auto-paginate a list endpoint (synchronous).
 
@@ -31,7 +31,7 @@ def paginate_sync(
     Returns:
         Flat list of raw item dicts collected across all pages.
     """
-    all_items: List[Dict[str, Any]] = []
+    all_items: list[dict[str, Any]] = []
     remaining = user_limit
     next_cursor: Optional[str] = base_params.get("next")
     # Work on a copy so the caller's dict is never mutated.
@@ -68,16 +68,16 @@ def paginate_sync(
 
 
 async def paginate_async(
-    make_request: Callable[[Dict[str, Any]], Any],
-    base_params: Dict[str, Any],
+    make_request: Callable[[dict[str, Any]], Any],
+    base_params: dict[str, Any],
     user_limit: Optional[int] = None,
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Auto-paginate a list endpoint (asynchronous).
 
     Same semantics as :func:`paginate_sync` but ``make_request`` is awaited.
     """
-    all_items: List[Dict[str, Any]] = []
+    all_items: list[dict[str, Any]] = []
     remaining = user_limit
     next_cursor: Optional[str] = base_params.get("next")
     # Work on a copy so the caller's dict is never mutated.

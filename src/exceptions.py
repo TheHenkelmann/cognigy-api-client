@@ -1,15 +1,21 @@
+from typing import Any
+
+
 class CognigyError(Exception):
     """Base exception for all Cognigy SDK errors."""
+
     pass
 
 
 class CognigyConfigurationError(CognigyError):
     """Raised when the client is not configured correctly (e.g. missing API key)."""
+
     pass
 
 
 class CognigyAPIError(CognigyError):
     """Raised when the Cognigy API returns an error response."""
+
     def __init__(self, message: str, status_code: int, response_body=None):
         detail = ""
         if response_body and isinstance(response_body, dict) and response_body.get("detail"):
@@ -21,7 +27,8 @@ class CognigyAPIError(CognigyError):
 
 class CognigyValidationError(CognigyError):
     """Raised when create/update data fails validation against the expected Pydantic model."""
-    def __init__(self, message: str, errors: list = None):
+
+    def __init__(self, message: str, errors: list[Any] | None = None):
         super().__init__(message)
         self.errors = errors or []
 

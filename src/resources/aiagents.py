@@ -7,39 +7,41 @@ for managing Cognigy AI Agents via the v2.0 API endpoints.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from ..client import CognigyClient
     from ..async_client import AsyncCognigyClient
+    from ..client import CognigyClient
+
+import builtins
 
 from ..models.aiagent import (
     AIAgent,
     AIAgentCreate,
-    AIAgentUpdate,
     AIAgentJob,
+    AIAgentUpdate,
     AIAgentValidateNameRequest,
 )
-from ..validation import validate_create_update_data, build_list_params
-from ..pagination import paginate_sync, paginate_async
+from ..pagination import paginate_async, paginate_sync
+from ..validation import build_list_params, validate_create_update_data
 
 
 class AIAgentsResource:
     """
     Synchronous resource for managing Cognigy AI Agents.
-    
+
     Provides methods to list, create, read, update, and delete AI Agents
     using the Cognigy v2.0 API. Also includes additional endpoints for
     jobs and name validation.
-    
+
     Attributes:
         _client: The CognigyClient instance used for API requests.
     """
-    
+
     def __init__(self, client: CognigyClient) -> None:
         """
         Initialize the AIAgentsResource.
-        
+
         Args:
             client: The CognigyClient instance to use for API requests.
         """
@@ -47,21 +49,21 @@ class AIAgentsResource:
 
     def list(
         self,
-        project_id: Optional[str] = None,
-        filter: Optional[str] = None,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
+        project_id: str | None = None,
+        filter: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
         **kwargs: Any,
-    ) -> List[AIAgent]:
+    ) -> builtins.list[AIAgent]:
         """
         List AI Agents with optional filtering and pagination.
-        
-        Retrieves a list of AI Agents from the Cognigy API. Results can be 
+
+        Retrieves a list of AI Agents from the Cognigy API. Results can be
         filtered and paginated using the provided parameters.
-        
+
         Args:
             project_id: Filter AI Agents by project ObjectId (24 hex characters).
             filter: Filter string for searching AI Agents by name.
@@ -75,14 +77,14 @@ class AIAgentsResource:
                          Obtained from a previous list response.
             previous_cursor: Cursor for fetching the previous page of results.
                              Obtained from a previous list response.
-        
+
         Returns:
             List of AIAgent objects matching the query parameters.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, or server errors.
-        
+
         Example:
             >>> agents = client.aiagents.list(project_id="507f1f77bcf86cd799439011")
             >>> for agent in agents:
@@ -106,24 +108,24 @@ class AIAgentsResource:
     def create(self, data: AIAgentCreate, **kwargs: Any) -> AIAgent:
         """
         Create a new AI Agent.
-        
+
         Creates a new AI Agent in the specified project using the provided data.
-        
+
         Args:
             data: AIAgentCreate model containing the AI Agent configuration.
                   Must include 'project_id'. Optional fields include 'name',
                   'description', 'image', 'instructions', 'speaking_style',
                   'voice_configs', 'safety_settings', and more.
-        
+
         Returns:
             The created AIAgent object with all fields populated by the API,
             including the generated 'id', timestamps, and creator information.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, validation errors, or server errors.
             ValidationError: If the AIAgentCreate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import AIAgentCreate
             >>> new_agent = AIAgentCreate(
@@ -141,22 +143,22 @@ class AIAgentsResource:
     def get(self, ai_agent_id: str, **kwargs: Any) -> AIAgent:
         """
         Get an AI Agent by ID.
-        
+
         Retrieves a single AI Agent by its ObjectId.
-        
+
         Args:
             ai_agent_id: The ObjectId of the AI Agent to retrieve (24 hex characters).
-        
+
         Returns:
             The AIAgent object with all available fields including 'id', 'name',
             'description', 'instructions', 'speaking_style', 'voice_configs',
             'safety_settings', and metadata fields.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the AI Agent not being found (404),
                              or server errors.
-        
+
         Example:
             >>> agent = client.aiagents.get("507f1f77bcf86cd799439011")
             >>> print(f"Agent: {agent.name}, Voice enabled: {agent.enable_voice_configs}")
@@ -171,13 +173,13 @@ class AIAgentsResource:
         *,
         fetch_updated: bool = True,
         **kwargs: Any,
-    ) -> Optional[AIAgent]:
+    ) -> AIAgent | None:
         """
         Update an AI Agent.
 
         Updates an existing AI Agent with the provided data. Only fields that
         are set in the AIAgentUpdate object will be modified.
-        
+
         Args:
             ai_agent_id: The ObjectId of the AI Agent to update (24 hex characters).
             data: AIAgentUpdate model containing the fields to update.
@@ -188,17 +190,17 @@ class AIAgentsResource:
                            is performed and the updated agent is returned. If False,
                            no GET is performed and None is returned when the API
                            returns no body.
-        
+
         Returns:
             The updated AIAgent object with all fields reflecting the changes,
             or None if the API returned no body and fetch_updated=False.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the AI Agent not being found (404),
                              validation errors, or server errors.
             ValidationError: If the AIAgentUpdate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import AIAgentUpdate
             >>> update_data = AIAgentUpdate(
@@ -209,7 +211,9 @@ class AIAgentsResource:
             >>> print(agent.name)  # "Updated Agent Name"
         """
         data = validate_create_update_data(data, AIAgentUpdate)
-        response = self._client._request("PATCH", f"/v2.0/aiagents/{ai_agent_id}", data=data, **kwargs)
+        response = self._client._request(
+            "PATCH", f"/v2.0/aiagents/{ai_agent_id}", data=data, **kwargs
+        )
         if response is None:
             if fetch_updated:
                 return self.get(ai_agent_id, **kwargs)
@@ -219,45 +223,45 @@ class AIAgentsResource:
     def delete(self, ai_agent_id: str, **kwargs: Any) -> None:
         """
         Delete an AI Agent.
-        
+
         Permanently deletes an AI Agent by its ObjectId. This action cannot be undone.
-        
+
         Args:
             ai_agent_id: The ObjectId of the AI Agent to delete (24 hex characters).
-        
+
         Returns:
             None
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the AI Agent not being found (404),
                              or server errors.
-        
+
         Example:
             >>> client.aiagents.delete("507f1f77bcf86cd799439011")
             >>> # AI Agent is now deleted
         """
         self._client._request("DELETE", f"/v2.0/aiagents/{ai_agent_id}", **kwargs)
 
-    def get_jobs(self, ai_agent_id: str, **kwargs: Any) -> List[AIAgentJob]:
+    def get_jobs(self, ai_agent_id: str, **kwargs: Any) -> builtins.list[AIAgentJob]:
         """
         Get jobs and their tools for an AI Agent.
-        
+
         Retrieves all jobs associated with an AI Agent, including
         the tools configured for each job.
-        
+
         Args:
             ai_agent_id: The ObjectId of the AI Agent (24 hex characters).
-        
+
         Returns:
             List of AIAgentJob objects, each containing job configuration
             and associated tools.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the AI Agent not being found (404),
                              or server errors.
-        
+
         Example:
             >>> jobs = client.aiagents.get_jobs("507f1f77bcf86cd799439011")
             >>> for job in jobs:
@@ -269,24 +273,24 @@ class AIAgentsResource:
     def validate_name(self, name: str, project_id: str, **kwargs: Any) -> None:
         """
         Validate if an AI Agent name already exists in a project.
-        
+
         Checks whether the specified name is already in use by another
         AI Agent in the given project. This is useful before creating
         a new AI Agent to avoid naming conflicts.
-        
+
         Args:
             name: The AI Agent name to validate.
             project_id: The ObjectId of the project to check (24 hex characters).
-        
+
         Returns:
             None if the name is valid and available.
-        
+
         Raises:
             CognigyAPIError: If the name already exists (typically returns an error),
                              or if the request fails due to authentication,
                              authorization, or server errors.
             ValidationError: If the project_id format is invalid.
-        
+
         Example:
             >>> try:
             ...     client.aiagents.validate_name("My Agent", "507f1f77bcf86cd799439011")
@@ -301,20 +305,20 @@ class AIAgentsResource:
 class AsyncAIAgentsResource:
     """
     Asynchronous resource for managing Cognigy AI Agents.
-    
+
     Provides async methods to list, create, read, update, and delete AI Agents
     using the Cognigy v2.0 API. Use this class with AsyncCognigyClient
     for non-blocking API operations. Also includes additional endpoints for
     jobs and name validation.
-    
+
     Attributes:
         _client: The AsyncCognigyClient instance used for API requests.
     """
-    
+
     def __init__(self, client: AsyncCognigyClient) -> None:
         """
         Initialize the AsyncAIAgentsResource.
-        
+
         Args:
             client: The AsyncCognigyClient instance to use for API requests.
         """
@@ -322,21 +326,21 @@ class AsyncAIAgentsResource:
 
     async def list(
         self,
-        project_id: Optional[str] = None,
-        filter: Optional[str] = None,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
+        project_id: str | None = None,
+        filter: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
         **kwargs: Any,
-    ) -> List[AIAgent]:
+    ) -> builtins.list[AIAgent]:
         """
         List AI Agents with optional filtering and pagination.
 
         Retrieves a list of AI Agents from the Cognigy API asynchronously.
         Results can be filtered and paginated using the provided parameters.
-        
+
         Args:
             project_id: Filter AI Agents by project ObjectId (24 hex characters).
             filter: Filter string for searching AI Agents by name.
@@ -350,14 +354,14 @@ class AsyncAIAgentsResource:
                          Obtained from a previous list response.
             previous_cursor: Cursor for fetching the previous page of results.
                              Obtained from a previous list response.
-        
+
         Returns:
             List of AIAgent objects matching the query parameters.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, or server errors.
-        
+
         Example:
             >>> agents = await client.aiagents.list(project_id="507f1f77bcf86cd799439011")
             >>> for agent in agents:
@@ -381,25 +385,25 @@ class AsyncAIAgentsResource:
     async def create(self, data: AIAgentCreate, **kwargs: Any) -> AIAgent:
         """
         Create a new AI Agent.
-        
+
         Creates a new AI Agent in the specified project using the provided data
         asynchronously.
-        
+
         Args:
             data: AIAgentCreate model containing the AI Agent configuration.
                   Must include 'project_id'. Optional fields include 'name',
                   'description', 'image', 'instructions', 'speaking_style',
                   'voice_configs', 'safety_settings', and more.
-        
+
         Returns:
             The created AIAgent object with all fields populated by the API,
             including the generated 'id', timestamps, and creator information.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, validation errors, or server errors.
             ValidationError: If the AIAgentCreate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import AIAgentCreate
             >>> new_agent = AIAgentCreate(
@@ -417,22 +421,22 @@ class AsyncAIAgentsResource:
     async def get(self, ai_agent_id: str, **kwargs: Any) -> AIAgent:
         """
         Get an AI Agent by ID.
-        
+
         Retrieves a single AI Agent by its ObjectId asynchronously.
-        
+
         Args:
             ai_agent_id: The ObjectId of the AI Agent to retrieve (24 hex characters).
-        
+
         Returns:
             The AIAgent object with all available fields including 'id', 'name',
             'description', 'instructions', 'speaking_style', 'voice_configs',
             'safety_settings', and metadata fields.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the AI Agent not being found (404),
                              or server errors.
-        
+
         Example:
             >>> agent = await client.aiagents.get("507f1f77bcf86cd799439011")
             >>> print(f"Agent: {agent.name}, Voice enabled: {agent.enable_voice_configs}")
@@ -447,13 +451,13 @@ class AsyncAIAgentsResource:
         *,
         fetch_updated: bool = True,
         **kwargs: Any,
-    ) -> Optional[AIAgent]:
+    ) -> AIAgent | None:
         """
         Update an AI Agent.
 
         Updates an existing AI Agent with the provided data asynchronously.
         Only fields that are set in the AIAgentUpdate object will be modified.
-        
+
         Args:
             ai_agent_id: The ObjectId of the AI Agent to update (24 hex characters).
             data: AIAgentUpdate model containing the fields to update.
@@ -464,17 +468,17 @@ class AsyncAIAgentsResource:
                            is performed and the updated agent is returned. If False,
                            no GET is performed and None is returned when the API
                            returns no body.
-        
+
         Returns:
             The updated AIAgent object with all fields reflecting the changes,
             or None if the API returned no body and fetch_updated=False.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the AI Agent not being found (404),
                              validation errors, or server errors.
             ValidationError: If the AIAgentUpdate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import AIAgentUpdate
             >>> update_data = AIAgentUpdate(
@@ -485,7 +489,9 @@ class AsyncAIAgentsResource:
             >>> print(agent.name)  # "Updated Agent Name"
         """
         data = validate_create_update_data(data, AIAgentUpdate)
-        response = await self._client._request("PATCH", f"/v2.0/aiagents/{ai_agent_id}", data=data, **kwargs)
+        response = await self._client._request(
+            "PATCH", f"/v2.0/aiagents/{ai_agent_id}", data=data, **kwargs
+        )
         if response is None:
             if fetch_updated:
                 return await self.get(ai_agent_id, **kwargs)
@@ -495,46 +501,46 @@ class AsyncAIAgentsResource:
     async def delete(self, ai_agent_id: str, **kwargs: Any) -> None:
         """
         Delete an AI Agent.
-        
+
         Permanently deletes an AI Agent by its ObjectId asynchronously.
         This action cannot be undone.
-        
+
         Args:
             ai_agent_id: The ObjectId of the AI Agent to delete (24 hex characters).
-        
+
         Returns:
             None
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the AI Agent not being found (404),
                              or server errors.
-        
+
         Example:
             >>> await client.aiagents.delete("507f1f77bcf86cd799439011")
             >>> # AI Agent is now deleted
         """
         await self._client._request("DELETE", f"/v2.0/aiagents/{ai_agent_id}", **kwargs)
 
-    async def get_jobs(self, ai_agent_id: str, **kwargs: Any) -> List[AIAgentJob]:
+    async def get_jobs(self, ai_agent_id: str, **kwargs: Any) -> builtins.list[AIAgentJob]:
         """
         Get jobs and their tools for an AI Agent.
-        
+
         Retrieves all jobs associated with an AI Agent asynchronously,
         including the tools configured for each job.
-        
+
         Args:
             ai_agent_id: The ObjectId of the AI Agent (24 hex characters).
-        
+
         Returns:
             List of AIAgentJob objects, each containing job configuration
             and associated tools.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the AI Agent not being found (404),
                              or server errors.
-        
+
         Example:
             >>> jobs = await client.aiagents.get_jobs("507f1f77bcf86cd799439011")
             >>> for job in jobs:
@@ -546,24 +552,24 @@ class AsyncAIAgentsResource:
     async def validate_name(self, name: str, project_id: str, **kwargs: Any) -> None:
         """
         Validate if an AI Agent name already exists in a project.
-        
+
         Checks asynchronously whether the specified name is already in use
         by another AI Agent in the given project. This is useful before
         creating a new AI Agent to avoid naming conflicts.
-        
+
         Args:
             name: The AI Agent name to validate.
             project_id: The ObjectId of the project to check (24 hex characters).
-        
+
         Returns:
             None if the name is valid and available.
-        
+
         Raises:
             CognigyAPIError: If the name already exists (typically returns an error),
                              or if the request fails due to authentication,
                              authorization, or server errors.
             ValidationError: If the project_id format is invalid.
-        
+
         Example:
             >>> try:
             ...     await client.aiagents.validate_name("My Agent", "507f1f77bcf86cd799439011")
@@ -572,4 +578,6 @@ class AsyncAIAgentsResource:
             ...     print("Name already exists")
         """
         request_data = AIAgentValidateNameRequest(name=name, project_id=project_id)
-        await self._client._request("POST", "/v2.0/aiagents/validatename", data=request_data, **kwargs)
+        await self._client._request(
+            "POST", "/v2.0/aiagents/validatename", data=request_data, **kwargs
+        )

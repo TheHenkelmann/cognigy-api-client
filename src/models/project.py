@@ -7,18 +7,21 @@ locales, and ObjectId fields according to the API specification.
 """
 
 from enum import Enum
-from typing import Optional, Literal, Union
+from typing import Optional, Union
+
 from pydantic import Field, field_validator
+
 from .base import CognigyBaseModel
 
 
 class CssColor(str, Enum):
     """
     Standard CSS color names supported by Cognigy.
-    
+
     These are the web-standard color names that can be used
     for project color customization.
     """
+
     ALICE_BLUE = "aliceBlue"
     ANTIQUE_WHITE = "antiqueWhite"
     AQUA = "aqua"
@@ -174,10 +177,11 @@ class CssColor(str, Enum):
 class CognigyColor(str, Enum):
     """
     Cognigy-specific color palette.
-    
+
     These are custom colors provided by Cognigy for project
     color customization in addition to standard CSS colors.
     """
+
     AMBER = "amber"
     BLUE_GREY = "blueGrey"
     COGNIGY_BLUE = "cognigyBlue"
@@ -198,11 +202,12 @@ VALID_COLORS = {c.value for c in CssColor} | {c.value for c in CognigyColor}
 class ProjectLocale(str, Enum):
     """
     Supported locales for Cognigy projects.
-    
+
     These locale codes determine the primary language and regional
     settings for a project's NLU (Natural Language Understanding)
     and content.
     """
+
     GE_GE = "ge-GE"
     DA_DK = "da-DK"
     EN_AU = "en-AU"
@@ -237,15 +242,16 @@ class ProjectLocale(str, Enum):
 class WhisperAssistConfiguration(str, Enum):
     """
     Whisper Assist configuration options for handover.
-    
+
     Controls how the Whisper Assist feature behaves during
     live agent handover sessions.
-    
+
     Attributes:
         NONE: Whisper Assist is disabled.
         BASIC: Basic Whisper Assist functionality enabled.
         TEMPLATE: Template-based Whisper Assist enabled.
     """
+
     NONE = "none"
     BASIC = "basic"
     TEMPLATE = "template"
@@ -254,40 +260,41 @@ class WhisperAssistConfiguration(str, Enum):
 class HandoverConfiguration(CognigyBaseModel):
     """
     Configuration for live agent handover functionality.
-    
+
     This model defines settings for how the project handles
     handover to live agents, including inbox setup and
     Whisper Assist configuration.
-    
+
     Attributes:
         setup_live_agent_inbox: Whether to automatically set up
             a Live Agent inbox for this project.
         whisper_assist_configuration: The Whisper Assist mode
             to use during handover sessions.
     """
+
     setup_live_agent_inbox: Optional[bool] = Field(
         default=None,
         alias="setupLiveAgentInbox",
-        description="Whether to set up a Live Agent inbox for the project."
+        description="Whether to set up a Live Agent inbox for the project.",
     )
     whisper_assist_configuration: Optional[WhisperAssistConfiguration] = Field(
         default=None,
         alias="whisperAssistConfiguration",
-        description="Whisper Assist configuration mode: 'none', 'basic', or 'template'."
+        description="Whisper Assist configuration mode: 'none', 'basic', or 'template'.",
     )
 
 
 def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
     """
     Validate that a string is a valid MongoDB ObjectId format.
-    
+
     Args:
         value: The string value to validate.
         field_name: Name of the field for error messages.
-    
+
     Returns:
         The validated string value.
-    
+
     Raises:
         ValueError: If the value is not a valid 24-character hex string.
     """
@@ -305,14 +312,14 @@ def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
 def _validate_timestamp(value: Optional[int], field_name: str) -> Optional[int]:
     """
     Validate that a timestamp is within the valid Unix timestamp range.
-    
+
     Args:
         value: The timestamp value to validate.
         field_name: Name of the field for error messages.
-    
+
     Returns:
         The validated timestamp value.
-    
+
     Raises:
         ValueError: If the value is outside the valid range (0-2147483647).
     """
@@ -328,13 +335,13 @@ def _validate_timestamp(value: Optional[int], field_name: str) -> Optional[int]:
 class Project(CognigyBaseModel):
     """
     Response model for Cognigy Project resources.
-    
+
     This model represents a Project as returned by the Cognigy API.
     It includes all fields that may be present in GET and POST responses.
-    
+
     Projects are the top-level organizational unit in Cognigy and contain
     flows, intents, lexicons, and other resources.
-    
+
     Attributes:
         id: Unique identifier for the project (24-character hex ObjectId).
         name: The display name of the project.
@@ -347,7 +354,7 @@ class Project(CognigyBaseModel):
         created_by: ObjectId of the user who created the project.
         last_changed: Unix timestamp when the project was last modified.
         last_changed_by: ObjectId of the user who last modified the project.
-    
+
     Example:
         >>> project = Project(
         ...     id="507f1f77bcf86cd799439011",
@@ -357,48 +364,41 @@ class Project(CognigyBaseModel):
         >>> print(project.name)
         'My Project'
     """
-    name: str = Field(
-        ...,
-        description="The display name of the project."
-    )
+
+    name: str = Field(..., description="The display name of the project.")
     color: Optional[str] = Field(
-        default=None,
-        description="The color used to identify the project in the UI."
+        default=None, description="The color used to identify the project in the UI."
     )
     handover_configuration: Optional[HandoverConfiguration] = Field(
         default=None,
         alias="handoverConfiguration",
-        description="Configuration for live agent handover functionality."
+        description="Configuration for live agent handover functionality.",
     )
     live_agent_default_inbox: Optional[int] = Field(
         default=None,
         alias="liveAgentDefaultInbox",
-        description="The default Live Agent inbox ID for the project."
+        description="The default Live Agent inbox ID for the project.",
     )
     primary_locale_reference: Optional[str] = Field(
         default=None,
         alias="primaryLocaleReference",
-        description="ObjectId reference to the project's primary locale."
+        description="ObjectId reference to the project's primary locale.",
     )
     created_at: Optional[int] = Field(
-        default=None,
-        alias="createdAt",
-        description="Unix timestamp when the project was created."
+        default=None, alias="createdAt", description="Unix timestamp when the project was created."
     )
     created_by: Optional[str] = Field(
-        default=None,
-        alias="createdBy",
-        description="ObjectId of the user who created the project."
+        default=None, alias="createdBy", description="ObjectId of the user who created the project."
     )
     last_changed: Optional[int] = Field(
         default=None,
         alias="lastChanged",
-        description="Unix timestamp when the project was last modified."
+        description="Unix timestamp when the project was last modified.",
     )
     last_changed_by: Optional[str] = Field(
         default=None,
         alias="lastChangedBy",
-        description="ObjectId of the user who last modified the project."
+        description="ObjectId of the user who last modified the project.",
     )
 
     @field_validator("color")
@@ -406,9 +406,7 @@ class Project(CognigyBaseModel):
     def validate_color(cls, v: Optional[str]) -> Optional[str]:
         """Validate that color is a valid CSS or Cognigy color."""
         if v is not None and v not in VALID_COLORS:
-            raise ValueError(
-                f"Invalid color '{v}'. Must be a valid CSS color or Cognigy color."
-            )
+            raise ValueError(f"Invalid color '{v}'. Must be a valid CSS color or Cognigy color.")
         return v
 
     @field_validator("primary_locale_reference")
@@ -445,10 +443,10 @@ class Project(CognigyBaseModel):
 class ProjectCreate(CognigyBaseModel):
     """
     Input model for creating a new Cognigy Project.
-    
+
     This model defines the fields that can be provided when creating
     a new project via the POST /v2.0/projects endpoint.
-    
+
     Attributes:
         name: The display name for the new project. Required.
         color: The color to use for the project in the UI.
@@ -457,7 +455,7 @@ class ProjectCreate(CognigyBaseModel):
             the default language for NLU and content.
         handover_configuration: Optional settings for live agent
             handover functionality.
-    
+
     Example:
         >>> create_data = ProjectCreate(
         ...     name="Customer Support Bot",
@@ -466,22 +464,18 @@ class ProjectCreate(CognigyBaseModel):
         ... )
         >>> project = client.projects.create(create_data)
     """
-    name: str = Field(
-        ...,
-        description="The display name for the new project."
-    )
+
+    name: str = Field(..., description="The display name for the new project.")
     color: Optional[str] = Field(
-        default=None,
-        description="The color to use for the project in the UI."
+        default=None, description="The color to use for the project in the UI."
     )
     locale: Optional[ProjectLocale] = Field(
-        default=None,
-        description="The primary locale for the project (e.g., 'en-US', 'de-DE')."
+        default=None, description="The primary locale for the project (e.g., 'en-US', 'de-DE')."
     )
     handover_configuration: Optional[HandoverConfiguration] = Field(
         default=None,
         alias="handoverConfiguration",
-        description="Configuration for live agent handover functionality."
+        description="Configuration for live agent handover functionality.",
     )
 
     @field_validator("color")
@@ -489,27 +483,25 @@ class ProjectCreate(CognigyBaseModel):
     def validate_color(cls, v: Optional[str]) -> Optional[str]:
         """Validate that color is a valid CSS or Cognigy color."""
         if v is not None and v not in VALID_COLORS:
-            raise ValueError(
-                f"Invalid color '{v}'. Must be a valid CSS color or Cognigy color."
-            )
+            raise ValueError(f"Invalid color '{v}'. Must be a valid CSS color or Cognigy color.")
         return v
 
 
 class ProjectUpdate(CognigyBaseModel):
     """
     Input model for updating an existing Cognigy Project.
-    
+
     This model defines the fields that can be modified when updating
     a project via the PATCH /v2.0/projects/{projectId} endpoint.
     All fields are optional; only provided fields will be updated.
-    
+
     Attributes:
         name: New display name for the project.
         color: New color for the project in the UI.
             Can be a CSS color name or a Cognigy-specific color.
         handover_configuration: Updated settings for live agent
             handover functionality.
-    
+
     Example:
         >>> update_data = ProjectUpdate(
         ...     name="Updated Project Name",
@@ -517,18 +509,13 @@ class ProjectUpdate(CognigyBaseModel):
         ... )
         >>> project = client.projects.update(project_id, update_data)
     """
-    name: Optional[str] = Field(
-        default=None,
-        description="New display name for the project."
-    )
-    color: Optional[str] = Field(
-        default=None,
-        description="New color for the project in the UI."
-    )
+
+    name: Optional[str] = Field(default=None, description="New display name for the project.")
+    color: Optional[str] = Field(default=None, description="New color for the project in the UI.")
     handover_configuration: Optional[HandoverConfiguration] = Field(
         default=None,
         alias="handoverConfiguration",
-        description="Updated configuration for live agent handover functionality."
+        description="Updated configuration for live agent handover functionality.",
     )
 
     @field_validator("color")
@@ -536,7 +523,5 @@ class ProjectUpdate(CognigyBaseModel):
     def validate_color(cls, v: Optional[str]) -> Optional[str]:
         """Validate that color is a valid CSS or Cognigy color."""
         if v is not None and v not in VALID_COLORS:
-            raise ValueError(
-                f"Invalid color '{v}'. Must be a valid CSS color or Cognigy color."
-            )
+            raise ValueError(f"Invalid color '{v}'. Must be a valid CSS color or Cognigy color.")
         return v

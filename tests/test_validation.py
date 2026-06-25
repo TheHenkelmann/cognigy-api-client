@@ -7,7 +7,6 @@ import pytest
 from cognigy.exceptions import CognigyValidationError
 from cognigy.models.project import ProjectCreate, ProjectUpdate
 from cognigy.validation import build_list_params, validate_create_update_data
-
 from conftest import CURSOR
 
 

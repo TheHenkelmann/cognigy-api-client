@@ -7,32 +7,34 @@ for managing Cognigy Flows via the v2.0 API endpoints.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from ..client import CognigyClient
     from ..async_client import AsyncCognigyClient
+    from ..client import CognigyClient
+
+import builtins
 
 from ..models.flow import Flow, FlowCreate, FlowUpdate
-from ..validation import validate_create_update_data, build_list_params
-from ..pagination import paginate_sync, paginate_async
+from ..pagination import paginate_async, paginate_sync
+from ..validation import build_list_params, validate_create_update_data
 
 
 class FlowsResource:
     """
     Synchronous resource for managing Cognigy Flows.
-    
+
     Provides methods to list, create, read, update, and delete flows
     using the Cognigy v2.0 API.
-    
+
     Attributes:
         _client: The CognigyClient instance used for API requests.
     """
-    
+
     def __init__(self, client: CognigyClient) -> None:
         """
         Initialize the FlowsResource.
-        
+
         Args:
             client: The CognigyClient instance to use for API requests.
         """
@@ -40,23 +42,23 @@ class FlowsResource:
 
     def list(
         self,
-        project_id: Optional[str] = None,
-        filter: Optional[str] = None,
-        with_ai_agents: Optional[bool] = None,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
-        preferred_locale_id: Optional[str] = None,
+        project_id: str | None = None,
+        filter: str | None = None,
+        with_ai_agents: bool | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
+        preferred_locale_id: str | None = None,
         **kwargs: Any,
-    ) -> List[Flow]:
+    ) -> builtins.list[Flow]:
         """
         List flows with optional filtering and pagination.
-        
+
         Retrieves a list of flows from the Cognigy API. Results can be filtered
         and paginated using the provided parameters.
-        
+
         Args:
             project_id: Filter flows by project ObjectId (24 hex characters).
             filter: Filter string for searching flows by name.
@@ -73,14 +75,14 @@ class FlowsResource:
                              Obtained from a previous list response.
             preferred_locale_id: Preferred locale ObjectId for localized content
                                  (24 hex characters).
-        
+
         Returns:
             List of Flow objects matching the query parameters.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, or server errors.
-        
+
         Example:
             >>> flows = client.flows.list(project_id="507f1f77bcf86cd799439011")
             >>> for flow in flows:
@@ -108,25 +110,25 @@ class FlowsResource:
     def create(self, data: FlowCreate, **kwargs: Any) -> Flow:
         """
         Create a new flow.
-        
+
         Creates a new flow in the specified project using the provided data.
-        
+
         Args:
             data: FlowCreate model containing the flow configuration.
                   Must include 'name' and 'project_id'. Optional fields
                   include 'description', 'context', 'attached_flows',
                   'attached_lexicons', and 'img'.
-        
+
         Returns:
             The created Flow object with all fields populated by the API,
             including the generated 'id', 'reference_id', timestamps,
             and creator information.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, validation errors, or server errors.
             ValidationError: If the FlowCreate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import FlowCreate
             >>> new_flow = FlowCreate(
@@ -140,28 +142,28 @@ class FlowsResource:
         response = self._client._request("POST", "/v2.0/flows", data=data, **kwargs)
         return Flow(**response)
 
-    def get(self, flow_id: str, preferred_locale_id: Optional[str] = None, **kwargs: Any) -> Flow:
+    def get(self, flow_id: str, preferred_locale_id: str | None = None, **kwargs: Any) -> Flow:
         """
         Get a flow by ID.
-        
+
         Retrieves a single flow by its ObjectId.
-        
+
         Args:
             flow_id: The ObjectId of the flow to retrieve (24 hex characters).
             preferred_locale_id: Preferred locale ObjectId for localized content
                                  (24 hex characters). If specified, returns
                                  content in the preferred locale when available.
-        
+
         Returns:
             The Flow object with all available fields including 'id', 'name',
             'description', 'reference_id', 'feedback_report', 'context',
             'attached_flows', 'attached_lexicons', and metadata fields.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the flow not being found (404),
                              or server errors.
-        
+
         Example:
             >>> flow = client.flows.get("507f1f77bcf86cd799439011")
             >>> print(f"Flow: {flow.name}, Training outdated: {flow.is_training_out_of_date}")
@@ -170,7 +172,9 @@ class FlowsResource:
         if preferred_locale_id:
             params["preferredLocaleId"] = preferred_locale_id
 
-        data = self._client._request("GET", f"/v2.0/flows/{flow_id}", params=params if params else None, **kwargs)
+        data = self._client._request(
+            "GET", f"/v2.0/flows/{flow_id}", params=params if params else None, **kwargs
+        )
         return Flow(**data)
 
     def update(
@@ -180,13 +184,13 @@ class FlowsResource:
         *,
         fetch_updated: bool = True,
         **kwargs: Any,
-    ) -> Optional[Flow]:
+    ) -> Flow | None:
         """
         Update a flow.
 
         Updates an existing flow with the provided data. Only fields that
         are set in the FlowUpdate object will be modified.
-        
+
         Args:
             flow_id: The ObjectId of the flow to update (24 hex characters).
             data: FlowUpdate model containing the fields to update.
@@ -197,17 +201,17 @@ class FlowsResource:
                            is performed and the updated flow is returned. If False,
                            no GET is performed and None is returned when the API
                            returns no body.
-        
+
         Returns:
             The updated Flow object with all fields reflecting the changes,
             or None if the API returned no body and fetch_updated=False.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the flow not being found (404),
                              validation errors, or server errors.
             ValidationError: If the FlowUpdate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import FlowUpdate
             >>> update_data = FlowUpdate(
@@ -228,20 +232,20 @@ class FlowsResource:
     def delete(self, flow_id: str, **kwargs: Any) -> None:
         """
         Delete a flow.
-        
+
         Permanently deletes a flow by its ObjectId. This action cannot be undone.
-        
+
         Args:
             flow_id: The ObjectId of the flow to delete (24 hex characters).
-        
+
         Returns:
             None
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the flow not being found (404),
                              or server errors.
-        
+
         Example:
             >>> client.flows.delete("507f1f77bcf86cd799439011")
             >>> # Flow is now deleted
@@ -252,19 +256,19 @@ class FlowsResource:
 class AsyncFlowsResource:
     """
     Asynchronous resource for managing Cognigy Flows.
-    
+
     Provides async methods to list, create, read, update, and delete flows
     using the Cognigy v2.0 API. Use this class with AsyncCognigyClient
     for non-blocking API operations.
-    
+
     Attributes:
         _client: The AsyncCognigyClient instance used for API requests.
     """
-    
+
     def __init__(self, client: AsyncCognigyClient) -> None:
         """
         Initialize the AsyncFlowsResource.
-        
+
         Args:
             client: The AsyncCognigyClient instance to use for API requests.
         """
@@ -272,23 +276,23 @@ class AsyncFlowsResource:
 
     async def list(
         self,
-        project_id: Optional[str] = None,
-        filter: Optional[str] = None,
-        with_ai_agents: Optional[bool] = None,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
-        preferred_locale_id: Optional[str] = None,
+        project_id: str | None = None,
+        filter: str | None = None,
+        with_ai_agents: bool | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
+        preferred_locale_id: str | None = None,
         **kwargs: Any,
-    ) -> List[Flow]:
+    ) -> builtins.list[Flow]:
         """
         List flows with optional filtering and pagination.
 
         Retrieves a list of flows from the Cognigy API asynchronously.
         Results can be filtered and paginated using the provided parameters.
-        
+
         Args:
             project_id: Filter flows by project ObjectId (24 hex characters).
             filter: Filter string for searching flows by name.
@@ -305,14 +309,14 @@ class AsyncFlowsResource:
                              Obtained from a previous list response.
             preferred_locale_id: Preferred locale ObjectId for localized content
                                  (24 hex characters).
-        
+
         Returns:
             List of Flow objects matching the query parameters.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, or server errors.
-        
+
         Example:
             >>> flows = await client.flows.list(project_id="507f1f77bcf86cd799439011")
             >>> for flow in flows:
@@ -340,26 +344,26 @@ class AsyncFlowsResource:
     async def create(self, data: FlowCreate, **kwargs: Any) -> Flow:
         """
         Create a new flow.
-        
+
         Creates a new flow in the specified project using the provided data
         asynchronously.
-        
+
         Args:
             data: FlowCreate model containing the flow configuration.
                   Must include 'name' and 'project_id'. Optional fields
                   include 'description', 'context', 'attached_flows',
                   'attached_lexicons', and 'img'.
-        
+
         Returns:
             The created Flow object with all fields populated by the API,
             including the generated 'id', 'reference_id', timestamps,
             and creator information.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, validation errors, or server errors.
             ValidationError: If the FlowCreate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import FlowCreate
             >>> new_flow = FlowCreate(
@@ -373,28 +377,30 @@ class AsyncFlowsResource:
         response = await self._client._request("POST", "/v2.0/flows", data=data, **kwargs)
         return Flow(**response)
 
-    async def get(self, flow_id: str, preferred_locale_id: Optional[str] = None, **kwargs: Any) -> Flow:
+    async def get(
+        self, flow_id: str, preferred_locale_id: str | None = None, **kwargs: Any
+    ) -> Flow:
         """
         Get a flow by ID.
-        
+
         Retrieves a single flow by its ObjectId asynchronously.
-        
+
         Args:
             flow_id: The ObjectId of the flow to retrieve (24 hex characters).
             preferred_locale_id: Preferred locale ObjectId for localized content
                                  (24 hex characters). If specified, returns
                                  content in the preferred locale when available.
-        
+
         Returns:
             The Flow object with all available fields including 'id', 'name',
             'description', 'reference_id', 'feedback_report', 'context',
             'attached_flows', 'attached_lexicons', and metadata fields.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the flow not being found (404),
                              or server errors.
-        
+
         Example:
             >>> flow = await client.flows.get("507f1f77bcf86cd799439011")
             >>> print(f"Flow: {flow.name}, Training outdated: {flow.is_training_out_of_date}")
@@ -403,7 +409,9 @@ class AsyncFlowsResource:
         if preferred_locale_id:
             params["preferredLocaleId"] = preferred_locale_id
 
-        data = await self._client._request("GET", f"/v2.0/flows/{flow_id}", params=params if params else None, **kwargs)
+        data = await self._client._request(
+            "GET", f"/v2.0/flows/{flow_id}", params=params if params else None, **kwargs
+        )
         return Flow(**data)
 
     async def update(
@@ -413,13 +421,13 @@ class AsyncFlowsResource:
         *,
         fetch_updated: bool = True,
         **kwargs: Any,
-    ) -> Optional[Flow]:
+    ) -> Flow | None:
         """
         Update a flow.
 
         Updates an existing flow with the provided data asynchronously.
         Only fields that are set in the FlowUpdate object will be modified.
-        
+
         Args:
             flow_id: The ObjectId of the flow to update (24 hex characters).
             data: FlowUpdate model containing the fields to update.
@@ -430,17 +438,17 @@ class AsyncFlowsResource:
                            is performed and the updated flow is returned. If False,
                            no GET is performed and None is returned when the API
                            returns no body.
-        
+
         Returns:
             The updated Flow object with all fields reflecting the changes,
             or None if the API returned no body and fetch_updated=False.
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the flow not being found (404),
                              validation errors, or server errors.
             ValidationError: If the FlowUpdate data fails Pydantic validation.
-        
+
         Example:
             >>> from cognigy.models import FlowUpdate
             >>> update_data = FlowUpdate(
@@ -451,7 +459,9 @@ class AsyncFlowsResource:
             >>> print(flow.name)  # "Updated Flow Name"
         """
         data = validate_create_update_data(data, FlowUpdate)
-        response = await self._client._request("PATCH", f"/v2.0/flows/{flow_id}", data=data, **kwargs)
+        response = await self._client._request(
+            "PATCH", f"/v2.0/flows/{flow_id}", data=data, **kwargs
+        )
         if response is None:
             if fetch_updated:
                 return await self.get(flow_id, **kwargs)
@@ -461,21 +471,21 @@ class AsyncFlowsResource:
     async def delete(self, flow_id: str, **kwargs: Any) -> None:
         """
         Delete a flow.
-        
+
         Permanently deletes a flow by its ObjectId asynchronously.
         This action cannot be undone.
-        
+
         Args:
             flow_id: The ObjectId of the flow to delete (24 hex characters).
-        
+
         Returns:
             None
-        
+
         Raises:
             CognigyAPIError: If the API request fails due to authentication,
                              authorization, the flow not being found (404),
                              or server errors.
-        
+
         Example:
             >>> await client.flows.delete("507f1f77bcf86cd799439011")
             >>> # Flow is now deleted

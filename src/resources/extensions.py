@@ -6,11 +6,13 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, BinaryIO, List, Optional, Union, overload
+from typing import TYPE_CHECKING, Any, BinaryIO, overload
 
 if TYPE_CHECKING:
     from ..async_client import AsyncCognigyClient
     from ..client import CognigyClient
+
+import builtins
 
 from ..exceptions import CognigyValidationError
 from ..models.extension import (
@@ -42,15 +44,15 @@ class ExtensionsResource:
 
     def list(
         self,
-        project_id: Optional[str] = None,
-        filter: Optional[str] = None,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
+        project_id: str | None = None,
+        filter: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
         **kwargs: Any,
-    ) -> List[ExtensionListItem]:
+    ) -> builtins.list[ExtensionListItem]:
         if project_id is not None:
             _require_object_id(project_id, "project_id")
         params = build_list_params(
@@ -70,9 +72,7 @@ class ExtensionsResource:
 
     def get(self, extension_id: str, **kwargs: Any) -> Extension:
         _require_object_id(extension_id, "extension_id")
-        data = self._client._request(
-            "GET", f"/v2.0/extensions/{extension_id}", **kwargs
-        )
+        data = self._client._request("GET", f"/v2.0/extensions/{extension_id}", **kwargs)
         return Extension(**data)
 
     def delete(self, extension_id: str, **kwargs: Any) -> None:
@@ -84,23 +84,19 @@ class ExtensionsResource:
     ) -> None:
         _require_object_id(extension_id, "extension_id")
         data = validate_create_update_data(data, ExtensionSettingsUpdate)
-        self._client._request(
-            "PATCH", f"/v2.0/extensions/{extension_id}", data=data, **kwargs
-        )
+        self._client._request("PATCH", f"/v2.0/extensions/{extension_id}", data=data, **kwargs)
 
     def upload(self, data: ExtensionUploadByUrl, **kwargs: Any) -> ExtensionBackgroundTask:
         data = validate_create_update_data(data, ExtensionUploadByUrl)
-        response = self._client._request(
-            "POST", "/v2.0/extensions/upload", data=data, **kwargs
-        )
+        response = self._client._request("POST", "/v2.0/extensions/upload", data=data, **kwargs)
         return ExtensionBackgroundTask(**response)
 
     def create(
         self,
         project_id: str,
-        file: Union[str, Path, BinaryIO, bytes, bytearray],
+        file: str | Path | BinaryIO | bytes | bytearray,
         *,
-        filename: Optional[str] = None,
+        filename: str | None = None,
         **kwargs: Any,
     ) -> ExtensionBackgroundTask:
         _require_object_id(project_id, "project_id")
@@ -127,19 +123,19 @@ class ExtensionsResource:
         *,
         project_id: str,
         extension: str,
-        file: Union[str, Path, BinaryIO, bytes, bytearray],
-        filename: Optional[str] = None,
+        file: str | Path | BinaryIO | bytes | bytearray,
+        filename: str | None = None,
         **kwargs: Any,
     ) -> ExtensionBackgroundTask: ...
 
     def update(
         self,
-        data: Optional[ExtensionUpdatePackageByUrl] = None,
+        data: ExtensionUpdatePackageByUrl | None = None,
         *,
-        project_id: Optional[str] = None,
-        extension: Optional[str] = None,
-        file: Optional[Union[str, Path, BinaryIO, bytes, bytearray]] = None,
-        filename: Optional[str] = None,
+        project_id: str | None = None,
+        extension: str | None = None,
+        file: str | Path | BinaryIO | bytes | bytearray | None = None,
+        filename: str | None = None,
         **kwargs: Any,
     ) -> ExtensionBackgroundTask:
         """POST ``/v2.0/extensions/update`` — JSON body or multipart file."""
@@ -149,9 +145,7 @@ class ExtensionsResource:
                     "Use either ``data=`` (JSON) or keyword multipart arguments, not both."
                 )
             data = validate_create_update_data(data, ExtensionUpdatePackageByUrl)
-            response = self._client._request(
-                "POST", "/v2.0/extensions/update", data=data, **kwargs
-            )
+            response = self._client._request("POST", "/v2.0/extensions/update", data=data, **kwargs)
             return ExtensionBackgroundTask(**response)
 
         if file is None:
@@ -185,15 +179,15 @@ class AsyncExtensionsResource:
 
     async def list(
         self,
-        project_id: Optional[str] = None,
-        filter: Optional[str] = None,
-        limit: Optional[int] = None,
-        skip: Optional[int] = None,
-        sort: Optional[str] = None,
-        next_cursor: Optional[str] = None,
-        previous_cursor: Optional[str] = None,
+        project_id: str | None = None,
+        filter: str | None = None,
+        limit: int | None = None,
+        skip: int | None = None,
+        sort: str | None = None,
+        next_cursor: str | None = None,
+        previous_cursor: str | None = None,
         **kwargs: Any,
-    ) -> List[ExtensionListItem]:
+    ) -> builtins.list[ExtensionListItem]:
         if project_id is not None:
             _require_object_id(project_id, "project_id")
         params = build_list_params(
@@ -206,25 +200,19 @@ class AsyncExtensionsResource:
         )
 
         async def make_request(p):
-            return await self._client._request(
-                "GET", "/v2.0/extensions", params=p, **kwargs
-            )
+            return await self._client._request("GET", "/v2.0/extensions", params=p, **kwargs)
 
         items = await paginate_async(make_request, params, user_limit=limit)
         return [ExtensionListItem(**item) for item in items]
 
     async def get(self, extension_id: str, **kwargs: Any) -> Extension:
         _require_object_id(extension_id, "extension_id")
-        data = await self._client._request(
-            "GET", f"/v2.0/extensions/{extension_id}", **kwargs
-        )
+        data = await self._client._request("GET", f"/v2.0/extensions/{extension_id}", **kwargs)
         return Extension(**data)
 
     async def delete(self, extension_id: str, **kwargs: Any) -> None:
         _require_object_id(extension_id, "extension_id")
-        await self._client._request(
-            "DELETE", f"/v2.0/extensions/{extension_id}", **kwargs
-        )
+        await self._client._request("DELETE", f"/v2.0/extensions/{extension_id}", **kwargs)
 
     async def update_settings(
         self, extension_id: str, data: ExtensionSettingsUpdate, **kwargs: Any
@@ -235,9 +223,7 @@ class AsyncExtensionsResource:
             "PATCH", f"/v2.0/extensions/{extension_id}", data=data, **kwargs
         )
 
-    async def upload(
-        self, data: ExtensionUploadByUrl, **kwargs: Any
-    ) -> ExtensionBackgroundTask:
+    async def upload(self, data: ExtensionUploadByUrl, **kwargs: Any) -> ExtensionBackgroundTask:
         data = validate_create_update_data(data, ExtensionUploadByUrl)
         response = await self._client._request(
             "POST", "/v2.0/extensions/upload", data=data, **kwargs
@@ -247,9 +233,9 @@ class AsyncExtensionsResource:
     async def create(
         self,
         project_id: str,
-        file: Union[str, Path, BinaryIO, bytes, bytearray],
+        file: str | Path | BinaryIO | bytes | bytearray,
         *,
-        filename: Optional[str] = None,
+        filename: str | None = None,
         **kwargs: Any,
     ) -> ExtensionBackgroundTask:
         _require_object_id(project_id, "project_id")
@@ -276,19 +262,19 @@ class AsyncExtensionsResource:
         *,
         project_id: str,
         extension: str,
-        file: Union[str, Path, BinaryIO, bytes, bytearray],
-        filename: Optional[str] = None,
+        file: str | Path | BinaryIO | bytes | bytearray,
+        filename: str | None = None,
         **kwargs: Any,
     ) -> ExtensionBackgroundTask: ...
 
     async def update(
         self,
-        data: Optional[ExtensionUpdatePackageByUrl] = None,
+        data: ExtensionUpdatePackageByUrl | None = None,
         *,
-        project_id: Optional[str] = None,
-        extension: Optional[str] = None,
-        file: Optional[Union[str, Path, BinaryIO, bytes, bytearray]] = None,
-        filename: Optional[str] = None,
+        project_id: str | None = None,
+        extension: str | None = None,
+        file: str | Path | BinaryIO | bytes | bytearray | None = None,
+        filename: str | None = None,
         **kwargs: Any,
     ) -> ExtensionBackgroundTask:
         """POST ``/v2.0/extensions/update`` — JSON body or multipart file."""
@@ -329,9 +315,9 @@ class AsyncExtensionsResource:
 def _prepare_extension_file_upload(
     *,
     project_id: str,
-    extension: Optional[str],
-    file: Union[str, Path, BinaryIO, bytes, bytearray],
-    filename: Optional[str],
+    extension: str | None,
+    file: str | Path | BinaryIO | bytes | bytearray,
+    filename: str | None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Build httpx ``files`` and form ``data`` for multipart upload/update."""
     if isinstance(file, (str, Path)):

@@ -7,8 +7,7 @@ import json
 import httpx
 
 from cognigy.models.project import ProjectCreate, ProjectUpdate
-
-from conftest import CURSOR, PROJECT_ID, make_async_client, make_sync_client, sample_project
+from conftest import PROJECT_ID, make_async_client, make_sync_client, sample_project
 
 
 class TestProjectsResource:
@@ -125,8 +124,7 @@ class TestProjectsResource:
         pages = [
             {
                 "items": [
-                    sample_project(name=f"Page 1 #{i}", _id=f"{i:024d}")
-                    for i in range(1, 3)
+                    sample_project(name=f"Page 1 #{i}", _id=f"{i:024d}") for i in range(1, 3)
                 ],
                 "nextCursor": None,
             },

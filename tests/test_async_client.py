@@ -7,7 +7,6 @@ import pytest
 
 from cognigy import AsyncCognigyClient
 from cognigy.exceptions import CognigyAPIError, CognigyConfigurationError
-
 from conftest import BASE_URL, make_async_client, sample_project
 
 

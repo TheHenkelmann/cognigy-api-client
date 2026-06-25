@@ -6,7 +6,7 @@ to the API, so disallowed fields (e.g. _id) and wrong types are caught locally
 with clear errors instead of API 400 responses.
 """
 
-from typing import Any, Dict, Optional, Type, TypeVar
+from typing import Any, Optional, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
@@ -15,7 +15,7 @@ from .exceptions import CognigyValidationError
 T = TypeVar("T", bound=BaseModel)
 
 
-def validate_create_update_data(data: Any, model_class: Type[T]) -> T:
+def validate_create_update_data(data: Any, model_class: type[T]) -> T:
     """
     Validate and coerce data to the target Pydantic model for create/update requests.
 
@@ -43,10 +43,7 @@ def validate_create_update_data(data: Any, model_class: Type[T]) -> T:
     if isinstance(data, model_class):
         return data
 
-    if hasattr(data, "model_dump"):
-        raw = data.model_dump(by_alias=True)
-    else:
-        raw = data
+    raw = data.model_dump(by_alias=True) if hasattr(data, "model_dump") else data
 
     try:
         return model_class.model_validate(raw)
@@ -66,8 +63,8 @@ def build_list_params(
     sort: Optional[str] = None,
     next_cursor: Optional[str] = None,
     previous_cursor: Optional[str] = None,
-    extra: Optional[Dict[str, Any]] = None,
-) -> Dict[str, Any]:
+    extra: Optional[dict[str, Any]] = None,
+) -> dict[str, Any]:
     """
     Build and validate a params dict for list-style endpoints.
 
@@ -81,7 +78,7 @@ def build_list_params(
     - next_cursor / previous_cursor: optional 24-character strings
     - any additional query parameters can be supplied via `extra`
     """
-    params: Dict[str, Any] = {}
+    params: dict[str, Any] = {}
 
     if filter is not None:
         if not isinstance(filter, str):
