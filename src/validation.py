@@ -6,7 +6,9 @@ to the API, so disallowed fields (e.g. _id) and wrong types are caught locally
 with clear errors instead of API 400 responses.
 """
 
-from typing import Any, Optional, TypeVar
+from __future__ import annotations
+
+from typing import Any, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
@@ -57,13 +59,13 @@ def validate_create_update_data(data: Any, model_class: type[T]) -> T:
 
 def build_list_params(
     *,
-    filter: Optional[str] = None,
-    limit: Optional[int] = None,
-    skip: Optional[int] = None,
-    sort: Optional[str] = None,
-    next_cursor: Optional[str] = None,
-    previous_cursor: Optional[str] = None,
-    extra: Optional[dict[str, Any]] = None,
+    filter: str | None = None,
+    limit: int | None = None,
+    skip: int | None = None,
+    sort: str | None = None,
+    next_cursor: str | None = None,
+    previous_cursor: str | None = None,
+    extra: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """
     Build and validate a params dict for list-style endpoints.

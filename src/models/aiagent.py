@@ -5,8 +5,10 @@ This module contains Pydantic models for AI Agent resources including
 response models, create/update request models, and related nested models.
 """
 
+from __future__ import annotations
+
 import re
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 from pydantic import Field, field_validator, model_validator
 
@@ -19,7 +21,7 @@ UUID_PATTERN = re.compile(
 )
 
 
-def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
+def _validate_object_id(value: str | None, field_name: str) -> str | None:
     """
     Validate that a string matches MongoDB ObjectId format.
 
@@ -41,7 +43,7 @@ def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
     return value
 
 
-def _validate_uuid(value: Optional[str], field_name: str) -> Optional[str]:
+def _validate_uuid(value: str | None, field_name: str) -> str | None:
     """
     Validate that a string matches UUID format.
 
@@ -62,7 +64,7 @@ def _validate_uuid(value: Optional[str], field_name: str) -> Optional[str]:
     return value
 
 
-def _validate_unix_timestamp(value: Optional[int], field_name: str) -> Optional[int]:
+def _validate_unix_timestamp(value: int | None, field_name: str) -> int | None:
     """
     Validate Unix timestamp is within valid range.
 
@@ -107,11 +109,11 @@ class SpeakingStyle(CognigyBaseModel):
             (e.g., 'formal', 'informal').
     """
 
-    id: Optional[str] = Field(None, alias="_id", exclude=True)
-    completeness: Optional[str] = Field(
+    id: str | None = Field(None, alias="_id", exclude=True)
+    completeness: str | None = Field(
         None, description="How complete the responses should be (e.g., 'concise', 'detailed')"
     )
-    formality: Optional[str] = Field(
+    formality: str | None = Field(
         None, description="The formality level of responses (e.g., 'formal', 'informal')"
     )
 
@@ -132,25 +134,25 @@ class VoiceConfigs(CognigyBaseModel):
         tts_disable_cache: Whether to disable TTS caching.
     """
 
-    id: Optional[str] = Field(None, alias="_id", exclude=True)
-    tts_voice: Optional[str] = Field(
+    id: str | None = Field(None, alias="_id", exclude=True)
+    tts_voice: str | None = Field(
         None, alias="ttsVoice", description="The voice identifier to use for TTS"
     )
-    tts_language: Optional[str] = Field(
+    tts_language: str | None = Field(
         None, alias="ttsLanguage", description="The language code for TTS (e.g., 'en', 'de', 'zh')"
     )
-    tts_vendor: Optional[TTSVendor] = Field(
+    tts_vendor: TTSVendor | None = Field(
         None,
         alias="ttsVendor",
         description="The TTS vendor: aws, deepgram, elevenlabs, google, microsoft, nuance, default, custom, none",
     )
-    tts_model: Optional[str] = Field(
+    tts_model: str | None = Field(
         None, alias="ttsModel", description="The specific TTS model to use (vendor-specific)"
     )
-    tts_label: Optional[str] = Field(
+    tts_label: str | None = Field(
         None, alias="ttsLabel", description="A label for the TTS configuration"
     )
-    tts_disable_cache: Optional[bool] = Field(
+    tts_disable_cache: bool | None = Field(
         None, alias="ttsDisableCache", description="Whether to disable TTS caching"
     )
 
@@ -169,23 +171,23 @@ class SafetySettings(CognigyBaseModel):
         prevent_jailbreak_and_manipulation: Whether to prevent jailbreak attempts.
     """
 
-    id: Optional[str] = Field(None, alias="_id", exclude=True)
-    avoid_harmful_content: Optional[bool] = Field(
+    id: str | None = Field(None, alias="_id", exclude=True)
+    avoid_harmful_content: bool | None = Field(
         None,
         alias="avoidHarmfulContent",
         description="Whether to filter harmful content from responses",
     )
-    avoid_ungrounded_content: Optional[bool] = Field(
+    avoid_ungrounded_content: bool | None = Field(
         None,
         alias="avoidUngroundedContent",
         description="Whether to avoid responses not grounded in knowledge",
     )
-    avoid_copyright_infringements: Optional[bool] = Field(
+    avoid_copyright_infringements: bool | None = Field(
         None,
         alias="avoidCopyrightInfringements",
         description="Whether to avoid potential copyright issues",
     )
-    prevent_jailbreak_and_manipulation: Optional[bool] = Field(
+    prevent_jailbreak_and_manipulation: bool | None = Field(
         None,
         alias="preventJailbreakAndManipulation",
         description="Whether to prevent jailbreak attempts",
@@ -212,28 +214,28 @@ class AIAgentTool(CognigyBaseModel):
         config: Tool-specific configuration object.
     """
 
-    reference_id: Optional[str] = Field(
+    reference_id: str | None = Field(
         None, alias="referenceId", description="Reference identifier for the tool"
     )
-    type: Optional[str] = Field(None, description="Type of the tool node")
-    label: Optional[str] = Field(None, description="Human-readable label for the tool")
-    comment: Optional[str] = Field(None, description="Optional comment describing the tool")
-    comment_color: Optional[str] = Field(
+    type: str | None = Field(None, description="Type of the tool node")
+    label: str | None = Field(None, description="Human-readable label for the tool")
+    comment: str | None = Field(None, description="Optional comment describing the tool")
+    comment_color: str | None = Field(
         None, alias="commentColor", description="Color for the comment display"
     )
-    analytics_label: Optional[str] = Field(
+    analytics_label: str | None = Field(
         None, alias="analyticsLabel", description="Label used for analytics tracking"
     )
-    is_disabled: Optional[bool] = Field(
+    is_disabled: bool | None = Field(
         None, alias="isDisabled", description="Whether the tool is currently disabled"
     )
-    is_entry_point: Optional[bool] = Field(
+    is_entry_point: bool | None = Field(
         None, alias="isEntryPoint", description="Whether this tool is an entry point"
     )
-    extension: Optional[str] = Field(
+    extension: str | None = Field(
         None, description="Extension identifier if tool is from an extension"
     )
-    config: Optional[dict[str, Any]] = Field(None, description="Tool-specific configuration object")
+    config: dict[str, Any] | None = Field(None, description="Tool-specific configuration object")
 
 
 class AIAgentJob(CognigyBaseModel):
@@ -258,31 +260,29 @@ class AIAgentJob(CognigyBaseModel):
         tools: List of tools available to this job.
     """
 
-    reference_id: Optional[str] = Field(
+    reference_id: str | None = Field(
         None, alias="referenceId", description="Reference identifier for the job"
     )
-    type: Optional[str] = Field(None, description="Type of the job (typically 'aiAgentJob')")
-    label: Optional[str] = Field(None, description="Human-readable label for the job")
-    comment: Optional[str] = Field(None, description="Optional comment describing the job")
-    comment_color: Optional[str] = Field(
+    type: str | None = Field(None, description="Type of the job (typically 'aiAgentJob')")
+    label: str | None = Field(None, description="Human-readable label for the job")
+    comment: str | None = Field(None, description="Optional comment describing the job")
+    comment_color: str | None = Field(
         None, alias="commentColor", description="Color for the comment display"
     )
-    analytics_label: Optional[str] = Field(
+    analytics_label: str | None = Field(
         None, alias="analyticsLabel", description="Label used for analytics tracking"
     )
-    is_disabled: Optional[bool] = Field(
+    is_disabled: bool | None = Field(
         None, alias="isDisabled", description="Whether the job is currently disabled"
     )
-    is_entry_point: Optional[bool] = Field(
+    is_entry_point: bool | None = Field(
         None, alias="isEntryPoint", description="Whether this job is an entry point"
     )
-    extension: Optional[str] = Field(
+    extension: str | None = Field(
         None, description="Extension identifier if job is from an extension"
     )
-    config: Optional[dict[str, Any]] = Field(None, description="Job-specific configuration object")
-    tools: Optional[list[AIAgentTool]] = Field(
-        None, description="List of tools available to this job"
-    )
+    config: dict[str, Any] | None = Field(None, description="Job-specific configuration object")
+    tools: list[AIAgentTool] | None = Field(None, description="List of tools available to this job")
 
 
 class AIAgent(CognigyBaseModel):
@@ -312,70 +312,70 @@ class AIAgent(CognigyBaseModel):
         last_changed_by: ObjectId of user who last modified the AI Agent.
     """
 
-    name: Optional[str] = Field(None, description="Name of the AI Agent")
-    image: Optional[str] = Field(None, description="URL to the avatar image of the AI Agent")
-    image_optimized_format: Optional[bool] = Field(
+    name: str | None = Field(None, description="Name of the AI Agent")
+    image: str | None = Field(None, description="URL to the avatar image of the AI Agent")
+    image_optimized_format: bool | None = Field(
         None,
         alias="imageOptimizedFormat",
         description="Whether the optimized image format defined by Cognigy is used",
     )
-    knowledge_reference_id: Optional[str] = Field(
+    knowledge_reference_id: str | None = Field(
         None,
         alias="knowledgeReferenceId",
         description="UUID of the Knowledge Store to use as base knowledge, or null",
     )
-    description: Optional[str] = Field(
+    description: str | None = Field(
         None, max_length=1000, description="Short description of the AI Agent (max 1000 characters)"
     )
-    speaking_style: Optional[SpeakingStyle] = Field(
+    speaking_style: SpeakingStyle | None = Field(
         None,
         alias="speakingStyle",
         description="Configuration for response completeness and formality",
     )
-    voice_configs: Optional[VoiceConfigs] = Field(
+    voice_configs: VoiceConfigs | None = Field(
         None, alias="voiceConfigs", description="Text-to-speech configuration"
     )
-    enable_voice_configs: Optional[bool] = Field(
+    enable_voice_configs: bool | None = Field(
         None, alias="enableVoiceConfigs", description="Whether voice configuration is enabled"
     )
-    safety_settings: Optional[SafetySettings] = Field(
+    safety_settings: SafetySettings | None = Field(
         None, alias="safetySettings", description="Safety guardrail settings"
     )
-    contact_profiles_option: Optional[ContactProfilesOption] = Field(
+    contact_profiles_option: ContactProfilesOption | None = Field(
         None,
         alias="contactProfilesOption",
         description="How contact profiles are used: none, selectedProfileFields, completeProfile, profileMemoriesOnly",
     )
-    contact_profiles_selected: Optional[list[str]] = Field(
+    contact_profiles_selected: list[str] | None = Field(
         None,
         alias="contactProfilesSelected",
         description="Selected profile fields when contactProfilesOption is 'selectedProfileFields'",
     )
-    instructions: Optional[str] = Field(
+    instructions: str | None = Field(
         None, max_length=1000, description="Instructions for the AI Agent (max 1000 characters)"
     )
-    created_at: Optional[int] = Field(
+    created_at: int | None = Field(
         None, alias="createdAt", description="Unix timestamp when the AI Agent was created"
     )
-    created_by: Optional[str] = Field(
+    created_by: str | None = Field(
         None, alias="createdBy", description="ObjectId of user who created the AI Agent"
     )
-    last_changed: Optional[int] = Field(
+    last_changed: int | None = Field(
         None, alias="lastChanged", description="Unix timestamp when the AI Agent was last modified"
     )
-    last_changed_by: Optional[str] = Field(
+    last_changed_by: str | None = Field(
         None, alias="lastChangedBy", description="ObjectId of user who last modified the AI Agent"
     )
 
     @field_validator("knowledge_reference_id")
     @classmethod
-    def validate_knowledge_reference_id(cls, v: Optional[str]) -> Optional[str]:
+    def validate_knowledge_reference_id(cls, v: str | None) -> str | None:
         """Validate knowledge_reference_id matches UUID format."""
         return _validate_uuid(v, "knowledge_reference_id")
 
     @field_validator("description")
     @classmethod
-    def validate_description_length(cls, v: Optional[str]) -> Optional[str]:
+    def validate_description_length(cls, v: str | None) -> str | None:
         """Validate description does not exceed 1000 characters."""
         if v is not None and len(v) > 1000:
             raise ValueError(f"description must be at most 1000 characters, got {len(v)}")
@@ -383,7 +383,7 @@ class AIAgent(CognigyBaseModel):
 
     @field_validator("instructions")
     @classmethod
-    def validate_instructions_length(cls, v: Optional[str]) -> Optional[str]:
+    def validate_instructions_length(cls, v: str | None) -> str | None:
         """Validate instructions does not exceed 1000 characters."""
         if v is not None and len(v) > 1000:
             raise ValueError(f"instructions must be at most 1000 characters, got {len(v)}")
@@ -391,25 +391,25 @@ class AIAgent(CognigyBaseModel):
 
     @field_validator("created_at")
     @classmethod
-    def validate_created_at(cls, v: Optional[int]) -> Optional[int]:
+    def validate_created_at(cls, v: int | None) -> int | None:
         """Validate created_at is a valid Unix timestamp."""
         return _validate_unix_timestamp(v, "created_at")
 
     @field_validator("created_by")
     @classmethod
-    def validate_created_by(cls, v: Optional[str]) -> Optional[str]:
+    def validate_created_by(cls, v: str | None) -> str | None:
         """Validate created_by matches ObjectId format."""
         return _validate_object_id(v, "created_by")
 
     @field_validator("last_changed")
     @classmethod
-    def validate_last_changed(cls, v: Optional[int]) -> Optional[int]:
+    def validate_last_changed(cls, v: int | None) -> int | None:
         """Validate last_changed is a valid Unix timestamp."""
         return _validate_unix_timestamp(v, "last_changed")
 
     @field_validator("last_changed_by")
     @classmethod
-    def validate_last_changed_by(cls, v: Optional[str]) -> Optional[str]:
+    def validate_last_changed_by(cls, v: str | None) -> str | None:
         """Validate last_changed_by matches ObjectId format."""
         return _validate_object_id(v, "last_changed_by")
 
@@ -437,48 +437,48 @@ class AIAgentCreate(CognigyBaseModel):
         instructions: Instructions for the AI Agent (max 1000 characters).
     """
 
-    id: Optional[str] = Field(None, alias="_id", exclude=True)
-    name: Optional[str] = Field(None, description="Name of the AI Agent")
+    id: str | None = Field(None, alias="_id", exclude=True)
+    name: str | None = Field(None, description="Name of the AI Agent")
     project_id: str = Field(
         ..., alias="projectId", description="ObjectId of the project to create the AI Agent in"
     )
-    image: Optional[str] = Field(None, description="URL to the avatar image of the AI Agent")
-    image_optimized_format: Optional[bool] = Field(
+    image: str | None = Field(None, description="URL to the avatar image of the AI Agent")
+    image_optimized_format: bool | None = Field(
         None,
         alias="imageOptimizedFormat",
         description="Whether to use Cognigy's optimized image format",
     )
-    knowledge_reference_id: Optional[str] = Field(
+    knowledge_reference_id: str | None = Field(
         None,
         alias="knowledgeReferenceId",
         description="UUID of a Knowledge Store to use as base knowledge, or null",
     )
-    description: Optional[str] = Field(
+    description: str | None = Field(
         None, max_length=1000, description="Short description of the AI Agent (max 1000 characters)"
     )
-    speaking_style: Optional[SpeakingStyle] = Field(
+    speaking_style: SpeakingStyle | None = Field(
         None,
         alias="speakingStyle",
         description="Configuration for response completeness and formality",
     )
-    voice_configs: Optional[VoiceConfigs] = Field(
+    voice_configs: VoiceConfigs | None = Field(
         None, alias="voiceConfigs", description="Text-to-speech configuration"
     )
-    enable_voice_configs: Optional[bool] = Field(
+    enable_voice_configs: bool | None = Field(
         None, alias="enableVoiceConfigs", description="Whether to enable voice configuration"
     )
-    safety_settings: Optional[SafetySettings] = Field(
+    safety_settings: SafetySettings | None = Field(
         None, alias="safetySettings", description="Safety guardrail settings"
     )
-    contact_profiles_option: Optional[ContactProfilesOption] = Field(
+    contact_profiles_option: ContactProfilesOption | None = Field(
         None, alias="contactProfilesOption", description="How contact profiles should be used"
     )
-    contact_profiles_selected: Optional[list[str]] = Field(
+    contact_profiles_selected: list[str] | None = Field(
         None,
         alias="contactProfilesSelected",
         description="Profile fields to select when option is 'selectedProfileFields'",
     )
-    instructions: Optional[str] = Field(
+    instructions: str | None = Field(
         None, max_length=1000, description="Instructions for the AI Agent (max 1000 characters)"
     )
 
@@ -495,13 +495,13 @@ class AIAgentCreate(CognigyBaseModel):
 
     @field_validator("knowledge_reference_id")
     @classmethod
-    def validate_knowledge_reference_id(cls, v: Optional[str]) -> Optional[str]:
+    def validate_knowledge_reference_id(cls, v: str | None) -> str | None:
         """Validate knowledge_reference_id matches UUID format."""
         return _validate_uuid(v, "knowledge_reference_id")
 
     @field_validator("description")
     @classmethod
-    def validate_description_length(cls, v: Optional[str]) -> Optional[str]:
+    def validate_description_length(cls, v: str | None) -> str | None:
         """Validate description does not exceed 1000 characters."""
         if v is not None and len(v) > 1000:
             raise ValueError(f"description must be at most 1000 characters, got {len(v)}")
@@ -509,7 +509,7 @@ class AIAgentCreate(CognigyBaseModel):
 
     @field_validator("instructions")
     @classmethod
-    def validate_instructions_length(cls, v: Optional[str]) -> Optional[str]:
+    def validate_instructions_length(cls, v: str | None) -> str | None:
         """Validate instructions does not exceed 1000 characters."""
         if v is not None and len(v) > 1000:
             raise ValueError(f"instructions must be at most 1000 characters, got {len(v)}")
@@ -555,51 +555,51 @@ class AIAgentUpdate(CognigyBaseModel):
         instructions: New instructions (max 1000 characters).
     """
 
-    id: Optional[str] = Field(None, alias="_id", exclude=True)
-    name: Optional[str] = Field(None, description="New name for the AI Agent")
-    image: Optional[str] = Field(None, description="New avatar image URL")
-    image_optimized_format: Optional[bool] = Field(
+    id: str | None = Field(None, alias="_id", exclude=True)
+    name: str | None = Field(None, description="New name for the AI Agent")
+    image: str | None = Field(None, description="New avatar image URL")
+    image_optimized_format: bool | None = Field(
         None,
         alias="imageOptimizedFormat",
         description="Whether to use Cognigy's optimized image format",
     )
-    knowledge_reference_id: Optional[str] = Field(
+    knowledge_reference_id: str | None = Field(
         None, alias="knowledgeReferenceId", description="UUID of a Knowledge Store to use, or null"
     )
-    description: Optional[str] = Field(
+    description: str | None = Field(
         None, max_length=1000, description="New description (max 1000 characters)"
     )
-    speaking_style: Optional[SpeakingStyle] = Field(
+    speaking_style: SpeakingStyle | None = Field(
         None, alias="speakingStyle", description="New speaking style configuration"
     )
-    voice_configs: Optional[VoiceConfigs] = Field(
+    voice_configs: VoiceConfigs | None = Field(
         None, alias="voiceConfigs", description="New voice configuration"
     )
-    enable_voice_configs: Optional[bool] = Field(
+    enable_voice_configs: bool | None = Field(
         None, alias="enableVoiceConfigs", description="Whether to enable voice configuration"
     )
-    safety_settings: Optional[SafetySettings] = Field(
+    safety_settings: SafetySettings | None = Field(
         None, alias="safetySettings", description="New safety settings"
     )
-    contact_profiles_option: Optional[ContactProfilesOption] = Field(
+    contact_profiles_option: ContactProfilesOption | None = Field(
         None, alias="contactProfilesOption", description="New contact profiles option"
     )
-    contact_profiles_selected: Optional[list[str]] = Field(
+    contact_profiles_selected: list[str] | None = Field(
         None, alias="contactProfilesSelected", description="New selected profile fields"
     )
-    instructions: Optional[str] = Field(
+    instructions: str | None = Field(
         None, max_length=1000, description="New instructions (max 1000 characters)"
     )
 
     @field_validator("knowledge_reference_id")
     @classmethod
-    def validate_knowledge_reference_id(cls, v: Optional[str]) -> Optional[str]:
+    def validate_knowledge_reference_id(cls, v: str | None) -> str | None:
         """Validate knowledge_reference_id matches UUID format."""
         return _validate_uuid(v, "knowledge_reference_id")
 
     @field_validator("description")
     @classmethod
-    def validate_description_length(cls, v: Optional[str]) -> Optional[str]:
+    def validate_description_length(cls, v: str | None) -> str | None:
         """Validate description does not exceed 1000 characters."""
         if v is not None and len(v) > 1000:
             raise ValueError(f"description must be at most 1000 characters, got {len(v)}")
@@ -607,7 +607,7 @@ class AIAgentUpdate(CognigyBaseModel):
 
     @field_validator("instructions")
     @classmethod
-    def validate_instructions_length(cls, v: Optional[str]) -> Optional[str]:
+    def validate_instructions_length(cls, v: str | None) -> str | None:
         """Validate instructions does not exceed 1000 characters."""
         if v is not None and len(v) > 1000:
             raise ValueError(f"instructions must be at most 1000 characters, got {len(v)}")
@@ -626,7 +626,7 @@ class AIAgentValidateNameRequest(CognigyBaseModel):
         project_id: ObjectId of the project to check the name in.
     """
 
-    id: Optional[str] = Field(None, alias="_id", exclude=True)
+    id: str | None = Field(None, alias="_id", exclude=True)
     name: str = Field(..., description="The AI Agent name to validate")
     project_id: str = Field(
         ..., alias="projectId", description="ObjectId of the project to check the name in"

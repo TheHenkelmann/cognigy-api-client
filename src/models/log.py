@@ -5,9 +5,11 @@ This module contains Pydantic models for LogEntry resources
 from the v2.0 API endpoints.
 """
 
+from __future__ import annotations
+
 import re
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import Field, field_validator
 
@@ -17,7 +19,7 @@ from .base import CognigyBaseModel
 OBJECT_ID_PATTERN = re.compile(r"^[a-z0-9]{24}$")
 
 
-def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
+def _validate_object_id(value: str | None, field_name: str) -> str | None:
     """
     Validate that a string matches MongoDB ObjectId format.
 
@@ -68,19 +70,19 @@ class LogEntry(CognigyBaseModel):
         "Flow executed successfully"
     """
 
-    timestamp: Optional[datetime] = Field(
+    timestamp: datetime | None = Field(
         None, description="ISO 8601 datetime when the log entry was created"
     )
-    msg: Optional[str] = Field(None, description="The log message content")
-    meta: Optional[dict[str, Any]] = Field(
+    msg: str | None = Field(None, description="The log message content")
+    meta: dict[str, Any] | None = Field(
         None, description="Additional metadata associated with the log entry"
     )
-    trace_id: Optional[str] = Field(
+    trace_id: str | None = Field(
         None, alias="traceId", description="Trace identifier for correlating related log entries"
     )
 
     @field_validator("id", mode="before")
     @classmethod
-    def validate_id(cls, v: Optional[str]) -> Optional[str]:
+    def validate_id(cls, v: str | None) -> str | None:
         """Validate id matches ObjectId format."""
         return _validate_object_id(v, "id")

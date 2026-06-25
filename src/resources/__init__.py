@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .aiagents import AIAgentsResource, AsyncAIAgentsResource
 from .analytics import AnalyticsResource, AsyncAnalyticsResource
 from .connections import AsyncConnectionsResource, ConnectionsResource

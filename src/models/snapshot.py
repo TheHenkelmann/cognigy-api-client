@@ -5,8 +5,9 @@ This module contains Pydantic models for Snapshot resources including
 response models, create request models, and related nested models.
 """
 
+from __future__ import annotations
+
 import re
-from typing import Optional
 
 from pydantic import Field, field_validator
 
@@ -16,7 +17,7 @@ from .base import CognigyBaseModel
 OBJECT_ID_PATTERN = re.compile(r"^[a-z0-9]{24}$")
 
 
-def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
+def _validate_object_id(value: str | None, field_name: str) -> str | None:
     """
     Validate that a string matches MongoDB ObjectId format.
 
@@ -38,7 +39,7 @@ def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
     return value
 
 
-def _validate_unix_timestamp(value: Optional[int], field_name: str) -> Optional[int]:
+def _validate_unix_timestamp(value: int | None, field_name: str) -> int | None:
     """
     Validate Unix timestamp is within valid range.
 
@@ -77,35 +78,35 @@ class Snapshot(CognigyBaseModel):
         created_at: Unix timestamp when snapshot was created (0 to 2147483647).
     """
 
-    name: Optional[str] = Field(None, description="Name of the snapshot")
-    description: Optional[str] = Field(None, description="Description of the snapshot")
-    is_packaged: Optional[bool] = Field(
+    name: str | None = Field(None, description="Name of the snapshot")
+    description: str | None = Field(None, description="Description of the snapshot")
+    is_packaged: bool | None = Field(
         None,
         alias="isPackaged",
         description="Whether the snapshot has been packaged and is ready for download",
     )
-    package_expires_at: Optional[int] = Field(
+    package_expires_at: int | None = Field(
         None,
         alias="packageExpiresAt",
         description="Unix timestamp when the downloadable package expires",
     )
-    hash: Optional[str] = Field(None, description="Hash identifying the contents of the snapshot")
-    created_by: Optional[str] = Field(
+    hash: str | None = Field(None, description="Hash identifying the contents of the snapshot")
+    created_by: str | None = Field(
         None, alias="createdBy", description="ObjectId of user who created the snapshot"
     )
-    created_at: Optional[int] = Field(
+    created_at: int | None = Field(
         None, alias="createdAt", description="Unix timestamp when snapshot was created"
     )
 
     @field_validator("created_by")
     @classmethod
-    def validate_created_by(cls, v: Optional[str]) -> Optional[str]:
+    def validate_created_by(cls, v: str | None) -> str | None:
         """Validate created_by matches ObjectId format."""
         return _validate_object_id(v, "created_by")
 
     @field_validator("created_at")
     @classmethod
-    def validate_created_at(cls, v: Optional[int]) -> Optional[int]:
+    def validate_created_at(cls, v: int | None) -> int | None:
         """Validate created_at is a valid Unix timestamp."""
         return _validate_unix_timestamp(v, "created_at")
 
@@ -124,8 +125,8 @@ class SnapshotCreate(CognigyBaseModel):
         project_id: ObjectId of the project to create the snapshot from (required).
     """
 
-    name: Optional[str] = Field(None, description="Name of the snapshot")
-    description: Optional[str] = Field(None, description="Description of the snapshot")
+    name: str | None = Field(None, description="Name of the snapshot")
+    description: str | None = Field(None, description="Description of the snapshot")
     project_id: str = Field(
         ..., alias="projectId", description="ObjectId of the project to create the snapshot from"
     )
@@ -158,29 +159,29 @@ class SnapshotResource(CognigyBaseModel):
         created_at: Unix timestamp when resource was created (0 to 2147483647).
     """
 
-    name: Optional[str] = Field(None, description="Name of the resource")
-    reference_id: Optional[str] = Field(
+    name: str | None = Field(None, description="Name of the resource")
+    reference_id: str | None = Field(
         None, alias="referenceId", description="Reference ID of the resource"
     )
-    resource_type: Optional[str] = Field(
+    resource_type: str | None = Field(
         None, alias="resourceType", description="Type of resource (e.g., 'flow', 'lexicon')"
     )
-    created_by: Optional[str] = Field(
+    created_by: str | None = Field(
         None, alias="createdBy", description="ObjectId of user who created the resource"
     )
-    created_at: Optional[int] = Field(
+    created_at: int | None = Field(
         None, alias="createdAt", description="Unix timestamp when resource was created"
     )
 
     @field_validator("created_by")
     @classmethod
-    def validate_created_by(cls, v: Optional[str]) -> Optional[str]:
+    def validate_created_by(cls, v: str | None) -> str | None:
         """Validate created_by matches ObjectId format."""
         return _validate_object_id(v, "created_by")
 
     @field_validator("created_at")
     @classmethod
-    def validate_created_at(cls, v: Optional[int]) -> Optional[int]:
+    def validate_created_at(cls, v: int | None) -> int | None:
         """Validate created_at is a valid Unix timestamp."""
         return _validate_unix_timestamp(v, "created_at")
 
@@ -239,12 +240,10 @@ class SnapshotDownloadLinkRequest(CognigyBaseModel):
         project_id: Optional ObjectId of the project (24 hex characters).
     """
 
-    project_id: Optional[str] = Field(
-        None, alias="projectId", description="ObjectId of the project"
-    )
+    project_id: str | None = Field(None, alias="projectId", description="ObjectId of the project")
 
     @field_validator("project_id")
     @classmethod
-    def validate_project_id(cls, v: Optional[str]) -> Optional[str]:
+    def validate_project_id(cls, v: str | None) -> str | None:
         """Validate project_id matches ObjectId format."""
         return _validate_object_id(v, "project_id")

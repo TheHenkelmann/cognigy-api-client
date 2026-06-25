@@ -5,9 +5,10 @@ This module contains Pydantic models for KnowledgeStore resources including
 response models, create/update request models, and related enums.
 """
 
+from __future__ import annotations
+
 import re
 from enum import Enum
-from typing import Optional
 
 from pydantic import Field, field_validator
 
@@ -20,7 +21,7 @@ UUID_PATTERN = re.compile(
 )
 
 
-def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
+def _validate_object_id(value: str | None, field_name: str) -> str | None:
     """
     Validate that a string matches MongoDB ObjectId format.
 
@@ -42,7 +43,7 @@ def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
     return value
 
 
-def _validate_unix_timestamp(value: Optional[int], field_name: str) -> Optional[int]:
+def _validate_unix_timestamp(value: int | None, field_name: str) -> int | None:
     """
     Validate Unix timestamp is within valid range.
 
@@ -99,37 +100,37 @@ class KnowledgeStore(CognigyBaseModel):
     """
 
     name: str = Field(..., description="Name of the knowledge store")
-    description: Optional[str] = Field(
+    description: str | None = Field(
         None, description="Description about what the knowledge store contains"
     )
-    language: Optional[str] = Field(
+    language: str | None = Field(
         None, description="Language code of the knowledge store (e.g., 'en-US')"
     )
-    status: Optional[KnowledgeStoreStatus] = Field(
+    status: KnowledgeStoreStatus | None = Field(
         None, description="Current status of the knowledge store"
     )
-    documents: Optional[list[str]] = Field(
+    documents: list[str] | None = Field(
         None, description="List of document URLs or file names ingested into the store"
     )
-    reference_id: Optional[str] = Field(
+    reference_id: str | None = Field(
         None, alias="referenceId", description="UUID reference for the knowledge store"
     )
-    created_at: Optional[int] = Field(
+    created_at: int | None = Field(
         None, alias="createdAt", description="Unix timestamp when the store was created"
     )
-    created_by: Optional[str] = Field(
+    created_by: str | None = Field(
         None, alias="createdBy", description="ObjectId of user who created the store"
     )
-    last_changed: Optional[int] = Field(
+    last_changed: int | None = Field(
         None, alias="lastChanged", description="Unix timestamp when the store was last modified"
     )
-    last_changed_by: Optional[str] = Field(
+    last_changed_by: str | None = Field(
         None, alias="lastChangedBy", description="ObjectId of user who last modified the store"
     )
 
     @field_validator("reference_id")
     @classmethod
-    def validate_reference_id(cls, v: Optional[str]) -> Optional[str]:
+    def validate_reference_id(cls, v: str | None) -> str | None:
         """Validate reference_id matches UUID format."""
         if v is not None and not UUID_PATTERN.match(v):
             raise ValueError(
@@ -139,25 +140,25 @@ class KnowledgeStore(CognigyBaseModel):
 
     @field_validator("created_at")
     @classmethod
-    def validate_created_at(cls, v: Optional[int]) -> Optional[int]:
+    def validate_created_at(cls, v: int | None) -> int | None:
         """Validate created_at is a valid Unix timestamp."""
         return _validate_unix_timestamp(v, "created_at")
 
     @field_validator("created_by")
     @classmethod
-    def validate_created_by(cls, v: Optional[str]) -> Optional[str]:
+    def validate_created_by(cls, v: str | None) -> str | None:
         """Validate created_by matches ObjectId format."""
         return _validate_object_id(v, "created_by")
 
     @field_validator("last_changed")
     @classmethod
-    def validate_last_changed(cls, v: Optional[int]) -> Optional[int]:
+    def validate_last_changed(cls, v: int | None) -> int | None:
         """Validate last_changed is a valid Unix timestamp."""
         return _validate_unix_timestamp(v, "last_changed")
 
     @field_validator("last_changed_by")
     @classmethod
-    def validate_last_changed_by(cls, v: Optional[str]) -> Optional[str]:
+    def validate_last_changed_by(cls, v: str | None) -> str | None:
         """Validate last_changed_by matches ObjectId format."""
         return _validate_object_id(v, "last_changed_by")
 
@@ -181,7 +182,7 @@ class KnowledgeStoreCreate(CognigyBaseModel):
         alias="projectId",
         description="ObjectId of the project to create the knowledge store in",
     )
-    description: Optional[str] = Field(
+    description: str | None = Field(
         None, description="Description about what the knowledge store contains"
     )
 
@@ -210,5 +211,5 @@ class KnowledgeStoreUpdate(CognigyBaseModel):
         description: New description for the knowledge store.
     """
 
-    name: Optional[str] = Field(None, description="New name for the knowledge store")
-    description: Optional[str] = Field(None, description="New description for the knowledge store")
+    name: str | None = Field(None, description="New name for the knowledge store")
+    description: str | None = Field(None, description="New description for the knowledge store")

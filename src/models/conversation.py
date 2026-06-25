@@ -5,8 +5,10 @@ This module contains Pydantic models for Conversation resources including
 list (summary) items and conversation detail (message) items per conversations v2.0 API.
 """
 
+from __future__ import annotations
+
 import re
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import Field, field_validator
 
@@ -66,7 +68,7 @@ MESSAGE_TYPE_VALUES = frozenset({"input", "output"})
 MESSAGE_SOURCE_VALUES = frozenset({"user", "bot", "agent", "suggestion"})
 
 
-def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
+def _validate_object_id(value: str | None, field_name: str) -> str | None:
     """
     Validate that a string matches MongoDB ObjectId format (24 lowercase hex).
 
@@ -88,7 +90,7 @@ def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
     return value
 
 
-def _validate_channel(value: Optional[str], field_name: str) -> Optional[str]:
+def _validate_channel(value: str | None, field_name: str) -> str | None:
     """
     Validate channel against the allowed enum from the API.
 
@@ -132,54 +134,54 @@ class Conversation(CognigyBaseModel):
         endpoint_name: Name of the endpoint.
     """
 
-    contact_id: Optional[str] = Field(
+    contact_id: str | None = Field(
         None,
         alias="contactId",
         description="Contact identifier",
     )
-    channel: Optional[str] = Field(
+    channel: str | None = Field(
         None,
         description="Channel name (e.g. webchat3); must match API enum",
     )
-    project_id: Optional[str] = Field(
+    project_id: str | None = Field(
         None,
         alias="projectId",
         description="Project ObjectId (24 hex characters)",
     )
-    project_name: Optional[str] = Field(
+    project_name: str | None = Field(
         None,
         alias="projectName",
         description="Human-readable project name",
     )
-    flow_name: Optional[str] = Field(
+    flow_name: str | None = Field(
         None,
         alias="flowName",
         description="Name of the flow used in the conversation",
     )
-    messages: Optional[int] = Field(
+    messages: int | None = Field(
         None,
         description="Number of messages in the conversation",
     )
-    start_time: Optional[str] = Field(
+    start_time: str | None = Field(
         None,
         alias="startTime",
         description="Start time of the conversation",
     )
-    end_time: Optional[str] = Field(
+    end_time: str | None = Field(
         None,
         alias="endTime",
         description="End time of the conversation",
     )
-    ratings: Optional[list[float]] = Field(
+    ratings: list[float] | None = Field(
         None,
         description="List of rating numbers",
     )
-    rating_comments: Optional[list[str]] = Field(
+    rating_comments: list[str] | None = Field(
         None,
         alias="ratingComments",
         description="List of rating comment strings",
     )
-    endpoint_name: Optional[str] = Field(
+    endpoint_name: str | None = Field(
         None,
         alias="endpointName",
         description="Name of the endpoint",
@@ -187,13 +189,13 @@ class Conversation(CognigyBaseModel):
 
     @field_validator("project_id")
     @classmethod
-    def validate_project_id(cls, v: Optional[str]) -> Optional[str]:
+    def validate_project_id(cls, v: str | None) -> str | None:
         """Validate project_id matches ObjectId format (24 hex, min/max length 24)."""
         return _validate_object_id(v, "project_id")
 
     @field_validator("channel")
     @classmethod
-    def validate_channel(cls, v: Optional[str]) -> Optional[str]:
+    def validate_channel(cls, v: str | None) -> str | None:
         """Validate channel is one of the documented enum values."""
         return _validate_channel(v, "channel")
 
@@ -236,126 +238,126 @@ class ConversationMessage(CognigyBaseModel):
         rating_comment: Rating comment string.
     """
 
-    project_id: Optional[str] = Field(
+    project_id: str | None = Field(
         None,
         alias="projectId",
         description="Project ObjectId (24 hex characters)",
     )
-    project_name: Optional[str] = Field(
+    project_name: str | None = Field(
         None,
         alias="projectName",
         description="Human-readable project name",
     )
-    input_id: Optional[str] = Field(
+    input_id: str | None = Field(
         None,
         alias="inputId",
         description="Input identifier",
     )
-    session_id: Optional[str] = Field(
+    session_id: str | None = Field(
         None,
         alias="sessionId",
         description="Session identifier",
     )
-    contact_id: Optional[str] = Field(
+    contact_id: str | None = Field(
         None,
         alias="contactId",
         description="Contact identifier",
     )
-    organisation: Optional[str] = Field(
+    organisation: str | None = Field(
         None,
         description="Organisation ObjectId (24 hex characters)",
     )
-    input_text: Optional[str] = Field(
+    input_text: str | None = Field(
         None,
         alias="inputText",
         description="Text of the input",
     )
-    input_data: Optional[dict[str, Any]] = Field(
+    input_data: dict[str, Any] | None = Field(
         None,
         alias="inputData",
         description="Arbitrary input data object",
     )
-    type: Optional[str] = Field(
+    type: str | None = Field(
         None,
         description="Message type: 'input' or 'output'",
     )
-    source: Optional[str] = Field(
+    source: str | None = Field(
         None,
         description="Source: 'user', 'bot', 'agent', or 'suggestion'",
     )
-    flow_name: Optional[str] = Field(
+    flow_name: str | None = Field(
         None,
         alias="flowName",
         description="Name of the flow",
     )
-    flow_reference_id: Optional[str] = Field(
+    flow_reference_id: str | None = Field(
         None,
         alias="flowReferenceId",
         description="Flow reference identifier",
     )
-    channel: Optional[str] = Field(
+    channel: str | None = Field(
         None,
         description="Channel name; must match API enum",
     )
-    timestamp: Optional[dict[str, Any]] = Field(
+    timestamp: dict[str, Any] | None = Field(
         None,
         description="Timestamp object",
     )
-    in_handover_request: Optional[bool] = Field(
+    in_handover_request: bool | None = Field(
         None,
         alias="inHandoverRequest",
         description="Whether this is a handover request",
     )
-    in_handover_conversation: Optional[bool] = Field(
+    in_handover_conversation: bool | None = Field(
         None,
         alias="inHandoverConversation",
         description="Whether in handover conversation",
     )
-    output_id: Optional[str] = Field(
+    output_id: str | None = Field(
         None,
         alias="outputId",
         description="Output identifier",
     )
-    expires_at: Optional[dict[str, Any]] = Field(
+    expires_at: dict[str, Any] | None = Field(
         None,
         alias="expiresAt",
         description="Expiration timestamp object",
     )
-    endpoint_url_token: Optional[str] = Field(
+    endpoint_url_token: str | None = Field(
         None,
         alias="endpointUrlToken",
         description="End point URL token",
     )
-    endpoint_name: Optional[str] = Field(
+    endpoint_name: str | None = Field(
         None,
         alias="endpointName",
         description="Name of the endpoint",
     )
-    locale_reference_id: Optional[str] = Field(
+    locale_reference_id: str | None = Field(
         None,
         alias="localeReferenceId",
         description="Locale reference identifier",
     )
-    locale_name: Optional[str] = Field(
+    locale_name: str | None = Field(
         None,
         alias="localeName",
         description="Locale name",
     )
-    snapshot_id: Optional[str] = Field(
+    snapshot_id: str | None = Field(
         None,
         alias="snapshotId",
         description="Snapshot ObjectId (24 hex characters)",
     )
-    snapshot_name: Optional[str] = Field(
+    snapshot_name: str | None = Field(
         None,
         alias="snapshotName",
         description="Snapshot name",
     )
-    rating: Optional[float] = Field(
+    rating: float | None = Field(
         None,
         description="Rating number",
     )
-    rating_comment: Optional[str] = Field(
+    rating_comment: str | None = Field(
         None,
         alias="ratingComment",
         description="Rating comment string",
@@ -363,25 +365,25 @@ class ConversationMessage(CognigyBaseModel):
 
     @field_validator("project_id")
     @classmethod
-    def validate_project_id(cls, v: Optional[str]) -> Optional[str]:
+    def validate_project_id(cls, v: str | None) -> str | None:
         """Validate project_id matches ObjectId format."""
         return _validate_object_id(v, "project_id")
 
     @field_validator("organisation")
     @classmethod
-    def validate_organisation(cls, v: Optional[str]) -> Optional[str]:
+    def validate_organisation(cls, v: str | None) -> str | None:
         """Validate organisation matches ObjectId format."""
         return _validate_object_id(v, "organisation")
 
     @field_validator("channel")
     @classmethod
-    def validate_channel(cls, v: Optional[str]) -> Optional[str]:
+    def validate_channel(cls, v: str | None) -> str | None:
         """Validate channel is one of the documented enum values."""
         return _validate_channel(v, "channel")
 
     @field_validator("type")
     @classmethod
-    def validate_type(cls, v: Optional[str]) -> Optional[str]:
+    def validate_type(cls, v: str | None) -> str | None:
         """Validate type is 'input' or 'output'."""
         if v is not None and v not in MESSAGE_TYPE_VALUES:
             raise ValueError(f"Invalid type: must be 'input' or 'output', got '{v}'")
@@ -389,7 +391,7 @@ class ConversationMessage(CognigyBaseModel):
 
     @field_validator("source")
     @classmethod
-    def validate_source(cls, v: Optional[str]) -> Optional[str]:
+    def validate_source(cls, v: str | None) -> str | None:
         """Validate source is 'user', 'bot', 'agent', or 'suggestion'."""
         if v is not None and v not in MESSAGE_SOURCE_VALUES:
             raise ValueError(
@@ -399,6 +401,6 @@ class ConversationMessage(CognigyBaseModel):
 
     @field_validator("snapshot_id")
     @classmethod
-    def validate_snapshot_id(cls, v: Optional[str]) -> Optional[str]:
+    def validate_snapshot_id(cls, v: str | None) -> str | None:
         """Validate snapshot_id matches ObjectId format."""
         return _validate_object_id(v, "snapshot_id")

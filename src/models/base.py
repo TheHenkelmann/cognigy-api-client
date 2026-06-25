@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -16,8 +16,8 @@ class CognigyBaseModel(BaseModel):
     All snake_case fields get camelCase aliases when serializing for the API.
     """
 
-    id: Optional[str] = Field(None, alias="_id")
-    reference_id: Optional[str] = Field(None, alias="referenceId")
+    id: str | None = Field(None, alias="_id")
+    reference_id: str | None = Field(None, alias="referenceId")
 
     model_config = ConfigDict(
         populate_by_name=True,

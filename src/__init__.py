@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from . import models, resources
 from .async_client import AsyncCognigyClient
 from .client import CognigyClient

@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import logging
 import os
-from typing import Optional
 
 import httpx
 
@@ -10,9 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class AsyncCognigyClient:
-    def __init__(
-        self, api_key: Optional[str] = None, base_url: Optional[str] = None, timeout: int = 60
-    ):
+    def __init__(self, api_key: str | None = None, base_url: str | None = None, timeout: int = 60):
         self._api_key = api_key or os.getenv("COGNIGY_API_KEY")
         if not self._api_key:
             raise CognigyConfigurationError(

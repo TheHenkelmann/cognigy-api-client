@@ -5,8 +5,9 @@ This module contains Pydantic models for Function resources including
 response models and create/update request models.
 """
 
+from __future__ import annotations
+
 import re
-from typing import Optional
 
 from pydantic import Field, field_validator
 
@@ -16,7 +17,7 @@ from .base import CognigyBaseModel
 OBJECT_ID_PATTERN = re.compile(r"^[a-z0-9]{24}$")
 
 
-def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
+def _validate_object_id(value: str | None, field_name: str) -> str | None:
     """
     Validate that a string matches MongoDB ObjectId format.
 
@@ -38,7 +39,7 @@ def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
     return value
 
 
-def _validate_unix_timestamp(value: Optional[int], field_name: str) -> Optional[int]:
+def _validate_unix_timestamp(value: int | None, field_name: str) -> int | None:
     """
     Validate Unix timestamp is within valid range.
 
@@ -79,21 +80,21 @@ class Function(CognigyBaseModel):
         last_changed_by: ObjectId of the user who last modified the function.
     """
 
-    name: Optional[str] = Field(None, description="Human-readable name of the function")
-    code: Optional[str] = Field(None, description="JavaScript source code of the function")
-    is_disabled: Optional[bool] = Field(
+    name: str | None = Field(None, description="Human-readable name of the function")
+    code: str | None = Field(None, description="JavaScript source code of the function")
+    is_disabled: bool | None = Field(
         None, alias="isDisabled", description="Whether the function is disabled"
     )
-    created_at: Optional[int] = Field(
+    created_at: int | None = Field(
         None, alias="createdAt", description="Unix timestamp when the function was created"
     )
-    created_by: Optional[str] = Field(
+    created_by: str | None = Field(
         None, alias="createdBy", description="ObjectId of the user who created the function"
     )
-    last_changed: Optional[int] = Field(
+    last_changed: int | None = Field(
         None, alias="lastChanged", description="Unix timestamp when the function was last modified"
     )
-    last_changed_by: Optional[str] = Field(
+    last_changed_by: str | None = Field(
         None,
         alias="lastChangedBy",
         description="ObjectId of the user who last modified the function",
@@ -101,25 +102,25 @@ class Function(CognigyBaseModel):
 
     @field_validator("created_at")
     @classmethod
-    def validate_created_at(cls, v: Optional[int]) -> Optional[int]:
+    def validate_created_at(cls, v: int | None) -> int | None:
         """Validate created_at is a valid Unix timestamp."""
         return _validate_unix_timestamp(v, "created_at")
 
     @field_validator("created_by")
     @classmethod
-    def validate_created_by(cls, v: Optional[str]) -> Optional[str]:
+    def validate_created_by(cls, v: str | None) -> str | None:
         """Validate created_by matches ObjectId format."""
         return _validate_object_id(v, "created_by")
 
     @field_validator("last_changed")
     @classmethod
-    def validate_last_changed(cls, v: Optional[int]) -> Optional[int]:
+    def validate_last_changed(cls, v: int | None) -> int | None:
         """Validate last_changed is a valid Unix timestamp."""
         return _validate_unix_timestamp(v, "last_changed")
 
     @field_validator("last_changed_by")
     @classmethod
-    def validate_last_changed_by(cls, v: Optional[str]) -> Optional[str]:
+    def validate_last_changed_by(cls, v: str | None) -> str | None:
         """Validate last_changed_by matches ObjectId format."""
         return _validate_object_id(v, "last_changed_by")
 
@@ -150,9 +151,9 @@ class FunctionCreate(CognigyBaseModel):
     project_id: str = Field(
         ..., alias="projectId", description="ObjectId of the project to create the function in"
     )
-    name: Optional[str] = Field(None, description="Human-readable name of the function")
-    code: Optional[str] = Field(None, description="JavaScript source code of the function")
-    is_disabled: Optional[bool] = Field(
+    name: str | None = Field(None, description="Human-readable name of the function")
+    code: str | None = Field(None, description="JavaScript source code of the function")
+    is_disabled: bool | None = Field(
         None, alias="isDisabled", description="Whether the function should be created as disabled"
     )
 
@@ -190,8 +191,8 @@ class FunctionUpdate(CognigyBaseModel):
         ... )
     """
 
-    name: Optional[str] = Field(None, description="New human-readable name of the function")
-    code: Optional[str] = Field(None, description="New JavaScript source code of the function")
-    is_disabled: Optional[bool] = Field(
+    name: str | None = Field(None, description="New human-readable name of the function")
+    code: str | None = Field(None, description="New JavaScript source code of the function")
+    is_disabled: bool | None = Field(
         None, alias="isDisabled", description="Whether the function should be disabled"
     )

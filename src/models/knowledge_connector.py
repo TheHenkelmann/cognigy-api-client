@@ -6,9 +6,11 @@ response models, create/update request models, and related nested models.
 Knowledge Connectors allow external data sources to be integrated with Knowledge Stores.
 """
 
+from __future__ import annotations
+
 import re
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import Field, field_validator
 
@@ -18,7 +20,7 @@ from .base import CognigyBaseModel
 OBJECT_ID_PATTERN = re.compile(r"^[a-z0-9]{24}$")
 
 
-def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
+def _validate_object_id(value: str | None, field_name: str) -> str | None:
     """
     Validate that a string matches MongoDB ObjectId format.
 
@@ -40,7 +42,7 @@ def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
     return value
 
 
-def _validate_unix_timestamp(value: Optional[int], field_name: str) -> Optional[int]:
+def _validate_unix_timestamp(value: int | None, field_name: str) -> int | None:
     """
     Validate Unix timestamp is within valid range.
 
@@ -97,24 +99,24 @@ class ConnectorSchedule(CognigyBaseModel):
                    Uses zero-based indexing: Monday=0, Tuesday=1, ..., Sunday=6.
     """
 
-    id: Optional[str] = Field(
+    id: str | None = Field(
         None, alias="_id", exclude=True
     )  # Override base, schedules don't have IDs
 
-    enabled: Optional[bool] = Field(None, description="Whether scheduled execution is enabled")
-    start: Optional[int] = Field(
+    enabled: bool | None = Field(None, description="Whether scheduled execution is enabled")
+    start: int | None = Field(
         None,
         description="Unix timestamp for start date/time to calculate scheduled execution",
         ge=0,
         le=2147483647,
     )
-    hour: Optional[int] = Field(
+    hour: int | None = Field(
         None, description="Hour of the day to start execution (0-23)", ge=0, le=23
     )
-    minute: Optional[int] = Field(
+    minute: int | None = Field(
         None, description="Minute of the hour to start execution (0-59)", ge=0, le=59
     )
-    week_days: Optional[list[int]] = Field(
+    week_days: list[int] | None = Field(
         None,
         alias="weekDays",
         description="Days of the week to run (Monday=0, Tuesday=1, ..., Sunday=6)",
@@ -122,13 +124,13 @@ class ConnectorSchedule(CognigyBaseModel):
 
     @field_validator("start")
     @classmethod
-    def validate_start(cls, v: Optional[int]) -> Optional[int]:
+    def validate_start(cls, v: int | None) -> int | None:
         """Validate start is a valid Unix timestamp."""
         return _validate_unix_timestamp(v, "start")
 
     @field_validator("week_days")
     @classmethod
-    def validate_week_days(cls, v: Optional[list[int]]) -> Optional[list[int]]:
+    def validate_week_days(cls, v: list[int] | None) -> list[int] | None:
         """Validate all week_days are valid day indices (0-6)."""
         if v is not None:
             for i, day in enumerate(v):
@@ -163,70 +165,70 @@ class KnowledgeConnector(CognigyBaseModel):
         last_changed_by: ObjectId of user who last modified the connector.
     """
 
-    extension: Optional[str] = Field(
+    extension: str | None = Field(
         None, description="Name of the extension providing the connector (e.g., 'confluence')"
     )
-    version: Optional[str] = Field(
+    version: str | None = Field(
         None, description="Version of the extension identifier (e.g., '1.1.0')"
     )
-    type: Optional[str] = Field(
+    type: str | None = Field(
         None, description="The Knowledge Connector type identifier within the extension"
     )
-    config: Optional[dict[str, Any]] = Field(
+    config: dict[str, Any] | None = Field(
         None, description="Configuration object for the Knowledge Connector"
     )
-    name: Optional[str] = Field(None, description="Human-readable name of the Knowledge Connector")
-    schedule: Optional[ConnectorSchedule] = Field(
+    name: str | None = Field(None, description="Human-readable name of the Knowledge Connector")
+    schedule: ConnectorSchedule | None = Field(
         None, description="Schedule configuration for automatic execution"
     )
-    last_execution: Optional[int] = Field(
+    last_execution: int | None = Field(
         None,
         alias="lastExecution",
         description="Unix timestamp when the last execution was triggered",
     )
-    last_execution_status: Optional[KnowledgeConnectorExecutionStatus] = Field(
+    last_execution_status: KnowledgeConnectorExecutionStatus | None = Field(
         None, alias="lastExecutionStatus", description="Status of the last execution"
     )
-    created_at: Optional[int] = Field(
+    created_at: int | None = Field(
         None, alias="createdAt", description="Unix timestamp when connector was created"
     )
-    created_by: Optional[str] = Field(
+    created_by: str | None = Field(
         None, alias="createdBy", description="ObjectId of user who created the connector"
     )
-    last_changed: Optional[int] = Field(
+    last_changed: int | None = Field(
         None, alias="lastChanged", description="Unix timestamp when connector was last modified"
     )
-    last_changed_by: Optional[str] = Field(
+    last_changed_by: str | None = Field(
         None, alias="lastChangedBy", description="ObjectId of user who last modified the connector"
     )
 
     @field_validator("last_execution")
     @classmethod
-    def validate_last_execution(cls, v: Optional[int]) -> Optional[int]:
+    def validate_last_execution(cls, v: int | None) -> int | None:
         """Validate last_execution is a valid Unix timestamp."""
         return _validate_unix_timestamp(v, "last_execution")
 
     @field_validator("created_at")
     @classmethod
-    def validate_created_at(cls, v: Optional[int]) -> Optional[int]:
+    def validate_created_at(cls, v: int | None) -> int | None:
         """Validate created_at is a valid Unix timestamp."""
         return _validate_unix_timestamp(v, "created_at")
 
     @field_validator("created_by")
     @classmethod
-    def validate_created_by(cls, v: Optional[str]) -> Optional[str]:
+    def validate_created_by(cls, v: str | None) -> str | None:
         """Validate created_by matches ObjectId format."""
         return _validate_object_id(v, "created_by")
 
     @field_validator("last_changed")
     @classmethod
-    def validate_last_changed(cls, v: Optional[int]) -> Optional[int]:
+    def validate_last_changed(cls, v: int | None) -> int | None:
         """Validate last_changed is a valid Unix timestamp."""
         return _validate_unix_timestamp(v, "last_changed")
 
     @field_validator("last_changed_by")
     @classmethod
-    def validate_last_changed_by(cls, v: Optional[str]) -> Optional[str]:
+    def validate_last_changed_by(cls, v: str | None) -> str | None:
         """Validate last_changed_by matches ObjectId format."""
         return _validate_object_id(v, "last_changed_by")
 
@@ -247,24 +249,22 @@ class KnowledgeConnectorCreate(CognigyBaseModel):
         schedule: Schedule configuration for automatic execution.
     """
 
-    id: Optional[str] = Field(
-        None, alias="_id", exclude=True
-    )  # Override base, create doesn't have ID
+    id: str | None = Field(None, alias="_id", exclude=True)  # Override base, create doesn't have ID
 
-    extension: Optional[str] = Field(
+    extension: str | None = Field(
         None, description="Name of the extension providing the connector (e.g., 'confluence')"
     )
-    version: Optional[str] = Field(
+    version: str | None = Field(
         None, description="Version of the extension identifier (e.g., '1.1.0')"
     )
-    type: Optional[str] = Field(
+    type: str | None = Field(
         None, description="The Knowledge Connector type identifier within the extension"
     )
-    config: Optional[dict[str, Any]] = Field(
+    config: dict[str, Any] | None = Field(
         None, description="Configuration object for the Knowledge Connector"
     )
-    name: Optional[str] = Field(None, description="Human-readable name of the Knowledge Connector")
-    schedule: Optional[ConnectorSchedule] = Field(
+    name: str | None = Field(None, description="Human-readable name of the Knowledge Connector")
+    schedule: ConnectorSchedule | None = Field(
         None, description="Schedule configuration for automatic execution"
     )
 
@@ -283,16 +283,16 @@ class KnowledgeConnectorUpdate(CognigyBaseModel):
         schedule: New schedule configuration for automatic execution.
     """
 
-    id: Optional[str] = Field(
+    id: str | None = Field(
         None, alias="_id", exclude=True
     )  # Override base, update doesn't use ID in body
 
-    config: Optional[dict[str, Any]] = Field(
+    config: dict[str, Any] | None = Field(
         None, description="New configuration object for the Knowledge Connector"
     )
-    name: Optional[str] = Field(
+    name: str | None = Field(
         None, description="New human-readable name for the Knowledge Connector"
     )
-    schedule: Optional[ConnectorSchedule] = Field(
+    schedule: ConnectorSchedule | None = Field(
         None, description="New schedule configuration for automatic execution"
     )

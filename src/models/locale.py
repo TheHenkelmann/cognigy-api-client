@@ -5,9 +5,10 @@ This module contains Pydantic models for Locale resources including
 response models, create/update request models, and the NLU language enum.
 """
 
+from __future__ import annotations
+
 import re
 from enum import Enum
-from typing import Optional
 
 from pydantic import Field, field_validator
 
@@ -17,7 +18,7 @@ from .base import CognigyBaseModel
 OBJECT_ID_PATTERN = re.compile(r"^[a-z0-9]{24}$")
 
 
-def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
+def _validate_object_id(value: str | None, field_name: str) -> str | None:
     """
     Validate that a string matches MongoDB ObjectId format.
 
@@ -39,7 +40,7 @@ def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
     return value
 
 
-def _validate_unix_timestamp(value: Optional[int], field_name: str) -> Optional[int]:
+def _validate_unix_timestamp(value: int | None, field_name: str) -> int | None:
     """
     Validate Unix timestamp is within valid range.
 
@@ -152,58 +153,58 @@ class Locale(CognigyBaseModel):
         last_changed_by: ObjectId of the user who last modified the locale.
     """
 
-    name: Optional[str] = Field(
+    name: str | None = Field(
         None, description="Human-readable name of the locale (e.g., 'English')"
     )
-    primary: Optional[bool] = Field(
+    primary: bool | None = Field(
         None, description="Whether this is the primary/default locale for the project"
     )
-    nlu_language: Optional[NluLanguage] = Field(
+    nlu_language: NluLanguage | None = Field(
         None, alias="nluLanguage", description="The NLU language code for intent recognition"
     )
-    fallback_locale_reference: Optional[str] = Field(
+    fallback_locale_reference: str | None = Field(
         None, alias="fallbackLocaleReference", description="ObjectId of the fallback locale"
     )
-    created_at: Optional[int] = Field(
+    created_at: int | None = Field(
         None, alias="createdAt", description="Unix timestamp when the locale was created"
     )
-    created_by: Optional[str] = Field(
+    created_by: str | None = Field(
         None, alias="createdBy", description="ObjectId of the user who created the locale"
     )
-    last_changed: Optional[int] = Field(
+    last_changed: int | None = Field(
         None, alias="lastChanged", description="Unix timestamp when the locale was last modified"
     )
-    last_changed_by: Optional[str] = Field(
+    last_changed_by: str | None = Field(
         None, alias="lastChangedBy", description="ObjectId of the user who last modified the locale"
     )
 
     @field_validator("fallback_locale_reference")
     @classmethod
-    def validate_fallback_locale_reference(cls, v: Optional[str]) -> Optional[str]:
+    def validate_fallback_locale_reference(cls, v: str | None) -> str | None:
         """Validate fallback_locale_reference matches ObjectId format."""
         return _validate_object_id(v, "fallback_locale_reference")
 
     @field_validator("created_at")
     @classmethod
-    def validate_created_at(cls, v: Optional[int]) -> Optional[int]:
+    def validate_created_at(cls, v: int | None) -> int | None:
         """Validate created_at is a valid Unix timestamp."""
         return _validate_unix_timestamp(v, "created_at")
 
     @field_validator("created_by")
     @classmethod
-    def validate_created_by(cls, v: Optional[str]) -> Optional[str]:
+    def validate_created_by(cls, v: str | None) -> str | None:
         """Validate created_by matches ObjectId format."""
         return _validate_object_id(v, "created_by")
 
     @field_validator("last_changed")
     @classmethod
-    def validate_last_changed(cls, v: Optional[int]) -> Optional[int]:
+    def validate_last_changed(cls, v: int | None) -> int | None:
         """Validate last_changed is a valid Unix timestamp."""
         return _validate_unix_timestamp(v, "last_changed")
 
     @field_validator("last_changed_by")
     @classmethod
-    def validate_last_changed_by(cls, v: Optional[str]) -> Optional[str]:
+    def validate_last_changed_by(cls, v: str | None) -> str | None:
         """Validate last_changed_by matches ObjectId format."""
         return _validate_object_id(v, "last_changed_by")
 
@@ -233,19 +234,19 @@ class LocaleCreate(CognigyBaseModel):
         ... )
     """
 
-    name: Optional[str] = Field(
+    name: str | None = Field(
         None, description="Human-readable name of the locale (e.g., 'English')"
     )
     project_id: str = Field(
         ..., alias="projectId", description="ObjectId of the project to create the locale in"
     )
-    primary: Optional[bool] = Field(
+    primary: bool | None = Field(
         None, description="Whether this should be the primary/default locale"
     )
-    nlu_language: Optional[NluLanguage] = Field(
+    nlu_language: NluLanguage | None = Field(
         None, alias="nluLanguage", description="The NLU language code for intent recognition"
     )
-    fallback_locale_reference: Optional[str] = Field(
+    fallback_locale_reference: str | None = Field(
         None, alias="fallbackLocaleReference", description="ObjectId of the fallback locale"
     )
 
@@ -262,7 +263,7 @@ class LocaleCreate(CognigyBaseModel):
 
     @field_validator("fallback_locale_reference")
     @classmethod
-    def validate_fallback_locale_reference(cls, v: Optional[str]) -> Optional[str]:
+    def validate_fallback_locale_reference(cls, v: str | None) -> str | None:
         """Validate fallback_locale_reference matches ObjectId format."""
         return _validate_object_id(v, "fallback_locale_reference")
 
@@ -289,19 +290,19 @@ class LocaleUpdate(CognigyBaseModel):
         ... )
     """
 
-    name: Optional[str] = Field(None, description="New human-readable name for the locale")
-    primary: Optional[bool] = Field(
+    name: str | None = Field(None, description="New human-readable name for the locale")
+    primary: bool | None = Field(
         None, description="Whether this should be the primary/default locale"
     )
-    nlu_language: Optional[NluLanguage] = Field(
+    nlu_language: NluLanguage | None = Field(
         None, alias="nluLanguage", description="New NLU language code for intent recognition"
     )
-    fallback_locale_reference: Optional[str] = Field(
+    fallback_locale_reference: str | None = Field(
         None, alias="fallbackLocaleReference", description="ObjectId of the new fallback locale"
     )
 
     @field_validator("fallback_locale_reference")
     @classmethod
-    def validate_fallback_locale_reference(cls, v: Optional[str]) -> Optional[str]:
+    def validate_fallback_locale_reference(cls, v: str | None) -> str | None:
         """Validate fallback_locale_reference matches ObjectId format."""
         return _validate_object_id(v, "fallback_locale_reference")

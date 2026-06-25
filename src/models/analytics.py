@@ -5,7 +5,7 @@ This module provides data models for call counter and conversation counter
 metrics returned by the Analytics API endpoints.
 """
 
-from typing import Optional
+from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
@@ -37,19 +37,19 @@ class CallCounterMetric(BaseModel):
     day: int = Field(..., ge=1, le=31, description="Day of the month (1-31).")
     month: int = Field(..., ge=1, le=12, description="Month of the year (1-12).")
     year: int = Field(..., ge=2000, le=2100, description="Full year (e.g., 2024).")
-    max_concurrency: Optional[float] = Field(
+    max_concurrency: float | None = Field(
         None,
         alias="maxConcurrency",
         ge=0,
         description="Maximum number of concurrent calls recorded.",
     )
-    call_minutes: Optional[float] = Field(
+    call_minutes: float | None = Field(
         None, alias="callMinutes", ge=0, description="Total call duration in minutes."
     )
-    processed_calls: Optional[float] = Field(
+    processed_calls: float | None = Field(
         None, alias="processedCalls", ge=0, description="Total number of calls processed."
     )
-    billable_calls: Optional[float] = Field(
+    billable_calls: float | None = Field(
         None, alias="billableCalls", ge=0, description="Number of calls that are billable."
     )
 
@@ -111,10 +111,10 @@ class ConversationCounterMetric(BaseModel):
     day: int = Field(..., ge=1, le=31, description="Day of the month (1-31).")
     month: int = Field(..., ge=1, le=12, description="Month of the year (1-12).")
     year: int = Field(..., ge=2000, le=2100, description="Full year (e.g., 2024).")
-    conversations: Optional[float] = Field(
+    conversations: float | None = Field(
         None, ge=0, description="Total number of conversations for this day."
     )
-    per_channel: Optional[list[ChannelConversations]] = Field(
+    per_channel: list[ChannelConversations] | None = Field(
         None, alias="perChannel", description="Breakdown of conversations by channel."
     )
 

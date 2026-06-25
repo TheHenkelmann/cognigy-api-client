@@ -8,10 +8,12 @@ Tasks represent asynchronous operations in the Cognigy system such as
 imports, exports, training operations, and other long-running processes.
 """
 
+from __future__ import annotations
+
 import re
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import Field, field_validator
 
@@ -21,7 +23,7 @@ from .base import CognigyBaseModel
 OBJECT_ID_PATTERN = re.compile(r"^[a-z0-9]{24}$")
 
 
-def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
+def _validate_object_id(value: str | None, field_name: str) -> str | None:
     """
     Validate that a string matches MongoDB ObjectId format.
 
@@ -43,7 +45,7 @@ def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
     return value
 
 
-def _validate_unix_timestamp(value: Optional[int], field_name: str) -> Optional[int]:
+def _validate_unix_timestamp(value: int | None, field_name: str) -> int | None:
     """
     Validate Unix timestamp is within valid range.
 
@@ -123,44 +125,44 @@ class Task(CognigyBaseModel):
         Task import-flow: active (2/5)
     """
 
-    name: Optional[str] = Field(
+    name: str | None = Field(
         None, description="Name/type of the task describing the operation being performed"
     )
-    data: Optional[dict[str, Any]] = Field(
+    data: dict[str, Any] | None = Field(
         None, description="Parameters and configuration data for the task"
     )
-    status: Optional[TaskStatus] = Field(None, description="Current status of the task")
-    current_step: Optional[int] = Field(
+    status: TaskStatus | None = Field(None, description="Current status of the task")
+    current_step: int | None = Field(
         None, alias="currentStep", description="Current progress step number (for multi-step tasks)"
     )
-    total_step: Optional[int] = Field(
+    total_step: int | None = Field(
         None, alias="totalStep", description="Total number of steps in the task"
     )
-    fail_reason: Optional[str] = Field(
+    fail_reason: str | None = Field(
         None, alias="failReason", description="Error message if the task failed"
     )
-    last_run_at: Optional[datetime] = Field(
+    last_run_at: datetime | None = Field(
         None, alias="lastRunAt", description="ISO 8601 datetime when the task last started running"
     )
-    last_finished_at: Optional[datetime] = Field(
+    last_finished_at: datetime | None = Field(
         None, alias="lastFinishedAt", description="ISO 8601 datetime when the task last finished"
     )
-    created_at: Optional[int] = Field(
+    created_at: int | None = Field(
         None, alias="createdAt", description="Unix timestamp when the task was created"
     )
-    last_changed: Optional[int] = Field(
+    last_changed: int | None = Field(
         None, alias="lastChanged", description="Unix timestamp when the task was last modified"
     )
-    created_by: Optional[str] = Field(
+    created_by: str | None = Field(
         None, alias="createdBy", description="ObjectId of user who created the task"
     )
-    last_changed_by: Optional[str] = Field(
+    last_changed_by: str | None = Field(
         None, alias="lastChangedBy", description="ObjectId of user who last modified the task"
     )
 
     @field_validator("current_step", "total_step")
     @classmethod
-    def validate_step_positive(cls, v: Optional[int], info) -> Optional[int]:
+    def validate_step_positive(cls, v: int | None, info) -> int | None:
         """Validate step values are non-negative integers."""
         if v is not None and v < 0:
             raise ValueError(f"{info.field_name} must be a non-negative integer, got {v}")
@@ -168,30 +170,30 @@ class Task(CognigyBaseModel):
 
     @field_validator("created_at")
     @classmethod
-    def validate_created_at(cls, v: Optional[int]) -> Optional[int]:
+    def validate_created_at(cls, v: int | None) -> int | None:
         """Validate created_at is a valid Unix timestamp."""
         return _validate_unix_timestamp(v, "created_at")
 
     @field_validator("last_changed")
     @classmethod
-    def validate_last_changed(cls, v: Optional[int]) -> Optional[int]:
+    def validate_last_changed(cls, v: int | None) -> int | None:
         """Validate last_changed is a valid Unix timestamp."""
         return _validate_unix_timestamp(v, "last_changed")
 
     @field_validator("created_by")
     @classmethod
-    def validate_created_by(cls, v: Optional[str]) -> Optional[str]:
+    def validate_created_by(cls, v: str | None) -> str | None:
         """Validate created_by matches ObjectId format."""
         return _validate_object_id(v, "created_by")
 
     @field_validator("last_changed_by")
     @classmethod
-    def validate_last_changed_by(cls, v: Optional[str]) -> Optional[str]:
+    def validate_last_changed_by(cls, v: str | None) -> str | None:
         """Validate last_changed_by matches ObjectId format."""
         return _validate_object_id(v, "last_changed_by")
 
     @property
-    def progress_percent(self) -> Optional[float]:
+    def progress_percent(self) -> float | None:
         """
         Calculate the task progress as a percentage.
 

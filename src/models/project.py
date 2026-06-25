@@ -6,8 +6,10 @@ Cognigy Projects via the v2.0 API. Models include validation for colors,
 locales, and ObjectId fields according to the API specification.
 """
 
+from __future__ import annotations
+
 from enum import Enum
-from typing import Optional, Union
+from typing import Union
 
 from pydantic import Field, field_validator
 
@@ -272,19 +274,19 @@ class HandoverConfiguration(CognigyBaseModel):
             to use during handover sessions.
     """
 
-    setup_live_agent_inbox: Optional[bool] = Field(
+    setup_live_agent_inbox: bool | None = Field(
         default=None,
         alias="setupLiveAgentInbox",
         description="Whether to set up a Live Agent inbox for the project.",
     )
-    whisper_assist_configuration: Optional[WhisperAssistConfiguration] = Field(
+    whisper_assist_configuration: WhisperAssistConfiguration | None = Field(
         default=None,
         alias="whisperAssistConfiguration",
         description="Whisper Assist configuration mode: 'none', 'basic', or 'template'.",
     )
 
 
-def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
+def _validate_object_id(value: str | None, field_name: str) -> str | None:
     """
     Validate that a string is a valid MongoDB ObjectId format.
 
@@ -309,7 +311,7 @@ def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
     return value
 
 
-def _validate_timestamp(value: Optional[int], field_name: str) -> Optional[int]:
+def _validate_timestamp(value: int | None, field_name: str) -> int | None:
     """
     Validate that a timestamp is within the valid Unix timestamp range.
 
@@ -366,36 +368,36 @@ class Project(CognigyBaseModel):
     """
 
     name: str = Field(..., description="The display name of the project.")
-    color: Optional[str] = Field(
+    color: str | None = Field(
         default=None, description="The color used to identify the project in the UI."
     )
-    handover_configuration: Optional[HandoverConfiguration] = Field(
+    handover_configuration: HandoverConfiguration | None = Field(
         default=None,
         alias="handoverConfiguration",
         description="Configuration for live agent handover functionality.",
     )
-    live_agent_default_inbox: Optional[int] = Field(
+    live_agent_default_inbox: int | None = Field(
         default=None,
         alias="liveAgentDefaultInbox",
         description="The default Live Agent inbox ID for the project.",
     )
-    primary_locale_reference: Optional[str] = Field(
+    primary_locale_reference: str | None = Field(
         default=None,
         alias="primaryLocaleReference",
         description="ObjectId reference to the project's primary locale.",
     )
-    created_at: Optional[int] = Field(
+    created_at: int | None = Field(
         default=None, alias="createdAt", description="Unix timestamp when the project was created."
     )
-    created_by: Optional[str] = Field(
+    created_by: str | None = Field(
         default=None, alias="createdBy", description="ObjectId of the user who created the project."
     )
-    last_changed: Optional[int] = Field(
+    last_changed: int | None = Field(
         default=None,
         alias="lastChanged",
         description="Unix timestamp when the project was last modified.",
     )
-    last_changed_by: Optional[str] = Field(
+    last_changed_by: str | None = Field(
         default=None,
         alias="lastChangedBy",
         description="ObjectId of the user who last modified the project.",
@@ -403,7 +405,7 @@ class Project(CognigyBaseModel):
 
     @field_validator("color")
     @classmethod
-    def validate_color(cls, v: Optional[str]) -> Optional[str]:
+    def validate_color(cls, v: str | None) -> str | None:
         """Validate that color is a valid CSS or Cognigy color."""
         if v is not None and v not in VALID_COLORS:
             raise ValueError(f"Invalid color '{v}'. Must be a valid CSS color or Cognigy color.")
@@ -411,31 +413,31 @@ class Project(CognigyBaseModel):
 
     @field_validator("primary_locale_reference")
     @classmethod
-    def validate_primary_locale_reference(cls, v: Optional[str]) -> Optional[str]:
+    def validate_primary_locale_reference(cls, v: str | None) -> str | None:
         """Validate primary_locale_reference is a valid ObjectId."""
         return _validate_object_id(v, "primary_locale_reference")
 
     @field_validator("created_by")
     @classmethod
-    def validate_created_by(cls, v: Optional[str]) -> Optional[str]:
+    def validate_created_by(cls, v: str | None) -> str | None:
         """Validate created_by is a valid ObjectId."""
         return _validate_object_id(v, "created_by")
 
     @field_validator("last_changed_by")
     @classmethod
-    def validate_last_changed_by(cls, v: Optional[str]) -> Optional[str]:
+    def validate_last_changed_by(cls, v: str | None) -> str | None:
         """Validate last_changed_by is a valid ObjectId."""
         return _validate_object_id(v, "last_changed_by")
 
     @field_validator("created_at")
     @classmethod
-    def validate_created_at(cls, v: Optional[int]) -> Optional[int]:
+    def validate_created_at(cls, v: int | None) -> int | None:
         """Validate created_at is a valid Unix timestamp."""
         return _validate_timestamp(v, "created_at")
 
     @field_validator("last_changed")
     @classmethod
-    def validate_last_changed(cls, v: Optional[int]) -> Optional[int]:
+    def validate_last_changed(cls, v: int | None) -> int | None:
         """Validate last_changed is a valid Unix timestamp."""
         return _validate_timestamp(v, "last_changed")
 
@@ -466,13 +468,13 @@ class ProjectCreate(CognigyBaseModel):
     """
 
     name: str = Field(..., description="The display name for the new project.")
-    color: Optional[str] = Field(
+    color: str | None = Field(
         default=None, description="The color to use for the project in the UI."
     )
-    locale: Optional[ProjectLocale] = Field(
+    locale: ProjectLocale | None = Field(
         default=None, description="The primary locale for the project (e.g., 'en-US', 'de-DE')."
     )
-    handover_configuration: Optional[HandoverConfiguration] = Field(
+    handover_configuration: HandoverConfiguration | None = Field(
         default=None,
         alias="handoverConfiguration",
         description="Configuration for live agent handover functionality.",
@@ -480,7 +482,7 @@ class ProjectCreate(CognigyBaseModel):
 
     @field_validator("color")
     @classmethod
-    def validate_color(cls, v: Optional[str]) -> Optional[str]:
+    def validate_color(cls, v: str | None) -> str | None:
         """Validate that color is a valid CSS or Cognigy color."""
         if v is not None and v not in VALID_COLORS:
             raise ValueError(f"Invalid color '{v}'. Must be a valid CSS color or Cognigy color.")
@@ -510,9 +512,9 @@ class ProjectUpdate(CognigyBaseModel):
         >>> project = client.projects.update(project_id, update_data)
     """
 
-    name: Optional[str] = Field(default=None, description="New display name for the project.")
-    color: Optional[str] = Field(default=None, description="New color for the project in the UI.")
-    handover_configuration: Optional[HandoverConfiguration] = Field(
+    name: str | None = Field(default=None, description="New display name for the project.")
+    color: str | None = Field(default=None, description="New color for the project in the UI.")
+    handover_configuration: HandoverConfiguration | None = Field(
         default=None,
         alias="handoverConfiguration",
         description="Updated configuration for live agent handover functionality.",
@@ -520,7 +522,7 @@ class ProjectUpdate(CognigyBaseModel):
 
     @field_validator("color")
     @classmethod
-    def validate_color(cls, v: Optional[str]) -> Optional[str]:
+    def validate_color(cls, v: str | None) -> str | None:
         """Validate that color is a valid CSS or Cognigy color."""
         if v is not None and v not in VALID_COLORS:
             raise ValueError(f"Invalid color '{v}'. Must be a valid CSS color or Cognigy color.")

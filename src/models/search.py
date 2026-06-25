@@ -5,8 +5,9 @@ This module provides Pydantic models for search results returned by
 the Cognigy v2.0 global search endpoint.
 """
 
+from __future__ import annotations
+
 from enum import Enum
-from typing import Optional
 
 from pydantic import Field, field_validator
 
@@ -218,13 +219,13 @@ class SearchResult(CognigyBaseModel):
 
     name: str = Field(..., description="The name of the resource")
     type: SearchResultType = Field(..., description="The type of the resource")
-    sub_type: Optional[str] = Field(
+    sub_type: str | None = Field(
         None, alias="subType", description="The subtype of the resource, varies by resource type"
     )
-    project_id: Optional[str] = Field(
+    project_id: str | None = Field(
         None, alias="projectId", description="The project ObjectId containing this resource"
     )
-    last_changed: Optional[int] = Field(
+    last_changed: int | None = Field(
         None,
         alias="lastChanged",
         description="Unix timestamp of last modification",
@@ -234,7 +235,7 @@ class SearchResult(CognigyBaseModel):
 
     @field_validator("id", "project_id", mode="before")
     @classmethod
-    def validate_object_id(cls, v: Optional[str]) -> Optional[str]:
+    def validate_object_id(cls, v: str | None) -> str | None:
         """
         Validate that ObjectId fields contain exactly 24 lowercase hex characters.
 
@@ -259,7 +260,7 @@ class SearchResult(CognigyBaseModel):
 
     @field_validator("last_changed", mode="before")
     @classmethod
-    def validate_timestamp(cls, v: Optional[int]) -> Optional[int]:
+    def validate_timestamp(cls, v: int | None) -> int | None:
         """
         Validate that the Unix timestamp is within valid range.
 

@@ -6,7 +6,9 @@ These helpers transparently fetch multiple pages so callers can request any
 number of items (or all items) without worrying about the server cap.
 """
 
-from typing import Any, Callable, Optional
+from __future__ import annotations
+
+from typing import Any, Callable
 
 _SERVER_PAGE_LIMIT = 100
 
@@ -14,7 +16,7 @@ _SERVER_PAGE_LIMIT = 100
 def paginate_sync(
     make_request: Callable[[dict[str, Any]], dict[str, Any]],
     base_params: dict[str, Any],
-    user_limit: Optional[int] = None,
+    user_limit: int | None = None,
 ) -> list[dict[str, Any]]:
     """
     Auto-paginate a list endpoint (synchronous).
@@ -33,7 +35,7 @@ def paginate_sync(
     """
     all_items: list[dict[str, Any]] = []
     remaining = user_limit
-    next_cursor: Optional[str] = base_params.get("next")
+    next_cursor: str | None = base_params.get("next")
     # Work on a copy so the caller's dict is never mutated.
     base_params = {k: v for k, v in base_params.items() if k != "next"}
 
@@ -70,7 +72,7 @@ def paginate_sync(
 async def paginate_async(
     make_request: Callable[[dict[str, Any]], Any],
     base_params: dict[str, Any],
-    user_limit: Optional[int] = None,
+    user_limit: int | None = None,
 ) -> list[dict[str, Any]]:
     """
     Auto-paginate a list endpoint (asynchronous).
@@ -79,7 +81,7 @@ async def paginate_async(
     """
     all_items: list[dict[str, Any]] = []
     remaining = user_limit
-    next_cursor: Optional[str] = base_params.get("next")
+    next_cursor: str | None = base_params.get("next")
     # Work on a copy so the caller's dict is never mutated.
     base_params = {k: v for k, v in base_params.items() if k != "next"}
 

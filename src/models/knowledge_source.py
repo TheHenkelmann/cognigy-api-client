@@ -8,9 +8,11 @@ KnowledgeSources are the individual sources of knowledge within a KnowledgeStore
 such as URLs, PDFs, text files, or extension-based sources.
 """
 
+from __future__ import annotations
+
 import re
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import Field, field_validator
 
@@ -23,7 +25,7 @@ UUID_PATTERN = re.compile(
 )
 
 
-def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
+def _validate_object_id(value: str | None, field_name: str) -> str | None:
     """
     Validate that a string matches MongoDB ObjectId format.
 
@@ -45,7 +47,7 @@ def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
     return value
 
 
-def _validate_uuid(value: Optional[str], field_name: str) -> Optional[str]:
+def _validate_uuid(value: str | None, field_name: str) -> str | None:
     """
     Validate that a string matches UUID format.
 
@@ -66,7 +68,7 @@ def _validate_uuid(value: Optional[str], field_name: str) -> Optional[str]:
     return value
 
 
-def _validate_unix_timestamp(value: Optional[int], field_name: str) -> Optional[int]:
+def _validate_unix_timestamp(value: int | None, field_name: str) -> int | None:
     """
     Validate Unix timestamp is within valid range.
 
@@ -140,7 +142,7 @@ class KnowledgeSourceMetaData(CognigyBaseModel):
               to filter and organize knowledge sources.
     """
 
-    tags: Optional[list[str]] = Field(
+    tags: list[str] | None = Field(
         None, description="List of tags for categorizing the knowledge source"
     )
 
@@ -170,49 +172,49 @@ class KnowledgeSource(CognigyBaseModel):
         last_changed_by: ObjectId of user who last modified the source.
     """
 
-    name: Optional[str] = Field(None, description="Name of the knowledge source")
-    description: Optional[str] = Field(
+    name: str | None = Field(None, description="Name of the knowledge source")
+    description: str | None = Field(
         None, description="Description about what the knowledge source contains"
     )
-    type: Optional[KnowledgeSourceType] = Field(
+    type: KnowledgeSourceType | None = Field(
         None, description="Type of source: url, manual, pdf, txt, ctxt, or extension"
     )
-    status: Optional[KnowledgeSourceStatus] = Field(
+    status: KnowledgeSourceStatus | None = Field(
         None, description="Current status: ready, ingesting, or disabled"
     )
-    meta_data: Optional[KnowledgeSourceMetaData] = Field(
+    meta_data: KnowledgeSourceMetaData | None = Field(
         None, alias="metaData", description="Metadata including tags for categorization"
     )
-    data: Optional[dict[str, Any]] = Field(
+    data: dict[str, Any] | None = Field(
         None, description="Custom metadata object for storing additional information"
     )
-    chunk_count: Optional[int] = Field(
+    chunk_count: int | None = Field(
         None, alias="chunkCount", description="Number of chunks created from this source"
     )
-    connector_reference: Optional[str] = Field(
+    connector_reference: str | None = Field(
         None,
         alias="connectorReference",
         description="UUID of the associated connector (for extension type only)",
     )
-    reference_id: Optional[str] = Field(
+    reference_id: str | None = Field(
         None, alias="referenceId", description="UUID reference for the knowledge source"
     )
-    created_at: Optional[int] = Field(
+    created_at: int | None = Field(
         None, alias="createdAt", description="Unix timestamp when source was created"
     )
-    created_by: Optional[str] = Field(
+    created_by: str | None = Field(
         None, alias="createdBy", description="ObjectId of user who created the source"
     )
-    last_changed: Optional[int] = Field(
+    last_changed: int | None = Field(
         None, alias="lastChanged", description="Unix timestamp when source was last modified"
     )
-    last_changed_by: Optional[str] = Field(
+    last_changed_by: str | None = Field(
         None, alias="lastChangedBy", description="ObjectId of user who last modified the source"
     )
 
     @field_validator("chunk_count")
     @classmethod
-    def validate_chunk_count(cls, v: Optional[int]) -> Optional[int]:
+    def validate_chunk_count(cls, v: int | None) -> int | None:
         """Validate chunk_count is non-negative."""
         if v is not None and v < 0:
             raise ValueError(f"chunk_count must be non-negative, got {v}")
@@ -220,37 +222,37 @@ class KnowledgeSource(CognigyBaseModel):
 
     @field_validator("connector_reference")
     @classmethod
-    def validate_connector_reference(cls, v: Optional[str]) -> Optional[str]:
+    def validate_connector_reference(cls, v: str | None) -> str | None:
         """Validate connector_reference matches UUID format."""
         return _validate_uuid(v, "connector_reference")
 
     @field_validator("reference_id")
     @classmethod
-    def validate_reference_id(cls, v: Optional[str]) -> Optional[str]:
+    def validate_reference_id(cls, v: str | None) -> str | None:
         """Validate reference_id matches UUID format."""
         return _validate_uuid(v, "reference_id")
 
     @field_validator("created_at")
     @classmethod
-    def validate_created_at(cls, v: Optional[int]) -> Optional[int]:
+    def validate_created_at(cls, v: int | None) -> int | None:
         """Validate created_at is a valid Unix timestamp."""
         return _validate_unix_timestamp(v, "created_at")
 
     @field_validator("created_by")
     @classmethod
-    def validate_created_by(cls, v: Optional[str]) -> Optional[str]:
+    def validate_created_by(cls, v: str | None) -> str | None:
         """Validate created_by matches ObjectId format."""
         return _validate_object_id(v, "created_by")
 
     @field_validator("last_changed")
     @classmethod
-    def validate_last_changed(cls, v: Optional[int]) -> Optional[int]:
+    def validate_last_changed(cls, v: int | None) -> int | None:
         """Validate last_changed is a valid Unix timestamp."""
         return _validate_unix_timestamp(v, "last_changed")
 
     @field_validator("last_changed_by")
     @classmethod
-    def validate_last_changed_by(cls, v: Optional[str]) -> Optional[str]:
+    def validate_last_changed_by(cls, v: str | None) -> str | None:
         """Validate last_changed_by matches ObjectId format."""
         return _validate_object_id(v, "last_changed_by")
 
@@ -275,18 +277,18 @@ class KnowledgeSourceCreate(CognigyBaseModel):
         connector_id: UUID of the connector to use (only for type "extension").
     """
 
-    name: Optional[str] = Field(None, description="Name of the knowledge source")
-    description: Optional[str] = Field(
+    name: str | None = Field(None, description="Name of the knowledge source")
+    description: str | None = Field(
         None, description="Description about what the knowledge source contains"
     )
-    type: Optional[KnowledgeSourceType] = Field(
+    type: KnowledgeSourceType | None = Field(
         None, description="Type of source: url, manual, pdf, txt, ctxt, or extension"
     )
-    meta_data: Optional[KnowledgeSourceMetaData] = Field(
+    meta_data: KnowledgeSourceMetaData | None = Field(
         None, alias="metaData", description="Metadata including tags for categorization"
     )
-    url: Optional[str] = Field(None, description="URL to scrape content from (only for type 'url')")
-    connector_id: Optional[str] = Field(
+    url: str | None = Field(None, description="URL to scrape content from (only for type 'url')")
+    connector_id: str | None = Field(
         None,
         alias="connectorId",
         description="UUID of the connector to use (only for type 'extension')",
@@ -294,13 +296,13 @@ class KnowledgeSourceCreate(CognigyBaseModel):
 
     @field_validator("connector_id")
     @classmethod
-    def validate_connector_id(cls, v: Optional[str]) -> Optional[str]:
+    def validate_connector_id(cls, v: str | None) -> str | None:
         """Validate connector_id matches UUID format."""
         return _validate_uuid(v, "connector_id")
 
     @field_validator("url")
     @classmethod
-    def validate_url(cls, v: Optional[str]) -> Optional[str]:
+    def validate_url(cls, v: str | None) -> str | None:
         """Validate url is a valid URL format."""
         if v is not None and not v.startswith(("http://", "https://")):
             raise ValueError(f"url must start with 'http://' or 'https://', got '{v}'")
@@ -322,11 +324,11 @@ class KnowledgeSourceUpdate(CognigyBaseModel):
         meta_data: New metadata including tags for categorization.
     """
 
-    name: Optional[str] = Field(None, description="New name for the knowledge source")
-    description: Optional[str] = Field(None, description="New description for the knowledge source")
-    status: Optional[KnowledgeSourceStatus] = Field(
+    name: str | None = Field(None, description="New name for the knowledge source")
+    description: str | None = Field(None, description="New description for the knowledge source")
+    status: KnowledgeSourceStatus | None = Field(
         None, description="New status: ready, ingesting, or disabled"
     )
-    meta_data: Optional[KnowledgeSourceMetaData] = Field(
+    meta_data: KnowledgeSourceMetaData | None = Field(
         None, alias="metaData", description="New metadata including tags for categorization"
     )

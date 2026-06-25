@@ -5,8 +5,10 @@ This module contains Pydantic models for Chart Node resources including
 response models, create/update request models, and chart topology models.
 """
 
+from __future__ import annotations
+
 import re
-from typing import Any, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -185,7 +187,7 @@ NODE_PLACEMENT_MODES = {
 }
 
 
-def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
+def _validate_object_id(value: str | None, field_name: str) -> str | None:
     """
     Validate that a string matches MongoDB ObjectId format.
 
@@ -207,7 +209,7 @@ def _validate_object_id(value: Optional[str], field_name: str) -> Optional[str]:
     return value
 
 
-def _validate_comment_color(value: Optional[str]) -> Optional[str]:
+def _validate_comment_color(value: str | None) -> str | None:
     """
     Validate that comment color is either a hex color or a CSS color name.
 
@@ -244,10 +246,10 @@ class NodeMock(CognigyBaseModel):
         code: JavaScript code to execute when mock mode is enabled.
     """
 
-    is_enabled: Optional[bool] = Field(
+    is_enabled: bool | None = Field(
         None, alias="isEnabled", description="Whether mock mode is enabled for this node"
     )
-    code: Optional[str] = Field(
+    code: str | None = Field(
         None, description="JavaScript code to execute when mock mode is enabled"
     )
 
@@ -282,58 +284,56 @@ class Node(CognigyBaseModel):
         child_node_ids: List of IDs of child nodes (injected from topology).
     """
 
-    type: Optional[str] = Field(
+    type: str | None = Field(
         None, description="Type identifier of the node (e.g., 'if', 'say', 'think')"
     )
-    reference_id: Optional[str] = Field(
+    reference_id: str | None = Field(
         None, alias="referenceId", description="UUID reference for the node"
     )
-    extension: Optional[str] = Field(
+    extension: str | None = Field(
         None,
         description="Extension package providing this node type (e.g., '@cognigy/basic-nodes')",
     )
-    label: Optional[str] = Field(
+    label: str | None = Field(
         None, description="Custom display label replacing the default node name in the Flow Editor"
     )
-    analytics_label: Optional[str] = Field(
+    analytics_label: str | None = Field(
         None, alias="analyticsLabel", description="Label used for analytics/reporting purposes"
     )
-    comment: Optional[str] = Field(
-        None, description="Additional information or notes about the node"
-    )
-    comment_color: Optional[str] = Field(
+    comment: str | None = Field(None, description="Additional information or notes about the node")
+    comment_color: str | None = Field(
         None,
         alias="commentColor",
         description="Color for comment display (hex color or CSS color name)",
     )
-    is_collapsed: Optional[bool] = Field(
+    is_collapsed: bool | None = Field(
         None,
         alias="isCollapsed",
         description="Whether the node is visually collapsed in the editor",
     )
-    is_entry_point: Optional[bool] = Field(
+    is_entry_point: bool | None = Field(
         None, alias="isEntryPoint", description="Whether this node is an entry point for the flow"
     )
-    is_disabled: Optional[bool] = Field(
+    is_disabled: bool | None = Field(
         None,
         alias="isDisabled",
         description="Whether the node is disabled and skipped during execution",
     )
-    config: Optional[dict[str, Any]] = Field(
+    config: dict[str, Any] | None = Field(
         default_factory=dict, description="Node-specific configuration object (varies by node type)"
     )
-    locale_reference: Optional[str] = Field(
+    locale_reference: str | None = Field(
         None, alias="localeReference", description="ObjectId of the locale this node references"
     )
-    mock: Optional[NodeMock] = Field(None, description="Mock configuration for testing purposes")
-    conversion_metadata: Optional[dict[str, str]] = Field(
+    mock: NodeMock | None = Field(None, description="Mock configuration for testing purposes")
+    conversion_metadata: dict[str, str] | None = Field(
         None,
         alias="conversionMetadata",
         description="Metadata about field changes (added, removed, updated)",
     )
 
     # Topology fields (injected by SDK merge logic, not from API directly)
-    next_node_id: Optional[str] = Field(
+    next_node_id: str | None = Field(
         None, description="ID of the next sibling node (injected from topology)"
     )
     child_node_ids: list[str] = Field(
@@ -342,7 +342,7 @@ class Node(CognigyBaseModel):
 
     @field_validator("reference_id")
     @classmethod
-    def validate_reference_id(cls, v: Optional[str]) -> Optional[str]:
+    def validate_reference_id(cls, v: str | None) -> str | None:
         """Validate reference_id matches UUID format."""
         if v is not None and not UUID_PATTERN.match(v):
             raise ValueError(f"Invalid UUID format for reference_id: got '{v}'")
@@ -350,13 +350,13 @@ class Node(CognigyBaseModel):
 
     @field_validator("locale_reference")
     @classmethod
-    def validate_locale_reference(cls, v: Optional[str]) -> Optional[str]:
+    def validate_locale_reference(cls, v: str | None) -> str | None:
         """Validate locale_reference matches ObjectId format."""
         return _validate_object_id(v, "locale_reference")
 
     @field_validator("comment_color")
     @classmethod
-    def validate_comment_color(cls, v: Optional[str]) -> Optional[str]:
+    def validate_comment_color(cls, v: str | None) -> str | None:
         """Validate comment_color is a valid hex color or CSS color name."""
         return _validate_comment_color(v)
 
@@ -396,32 +396,32 @@ class NodeCreate(CognigyCreateUpdateModel):
         ...,
         description="Placement mode: append, prepend, appendChild, prependChild, insertChildAt, insertAfter, insertBefore",
     )
-    position: Optional[int] = Field(
+    position: int | None = Field(
         None,
         ge=0,
         le=2147483647,
         description="Position index for 'insertChildAt' mode (0 to 2147483647)",
     )
-    extension: Optional[str] = Field(None, description="Extension package for this node type")
-    label: Optional[str] = Field(None, description="Custom display label for the node")
-    comment: Optional[str] = Field(None, description="Additional notes about the node")
-    comment_color: Optional[str] = Field(
+    extension: str | None = Field(None, description="Extension package for this node type")
+    label: str | None = Field(None, description="Custom display label for the node")
+    comment: str | None = Field(None, description="Additional notes about the node")
+    comment_color: str | None = Field(
         None, alias="commentColor", description="Color for comment display (hex or CSS color name)"
     )
-    is_entry_point: Optional[bool] = Field(
+    is_entry_point: bool | None = Field(
         None, alias="isEntryPoint", description="Whether this node is a flow entry point"
     )
-    is_disabled: Optional[bool] = Field(
+    is_disabled: bool | None = Field(
         None, alias="isDisabled", description="Whether the node should be disabled"
     )
-    config: Optional[dict[str, Any]] = Field(None, description="Node-specific configuration object")
-    locale_reference: Optional[str] = Field(
+    config: dict[str, Any] | None = Field(None, description="Node-specific configuration object")
+    locale_reference: str | None = Field(
         None, alias="localeReference", description="Locale ObjectId for localized content"
     )
-    analytics_label: Optional[str] = Field(
+    analytics_label: str | None = Field(
         None, alias="analyticsLabel", description="Label for analytics purposes"
     )
-    mock: Optional[NodeMock] = Field(None, description="Mock configuration for testing")
+    mock: NodeMock | None = Field(None, description="Mock configuration for testing")
 
     @field_validator("target")
     @classmethod
@@ -446,13 +446,13 @@ class NodeCreate(CognigyCreateUpdateModel):
 
     @field_validator("locale_reference")
     @classmethod
-    def validate_locale_reference(cls, v: Optional[str]) -> Optional[str]:
+    def validate_locale_reference(cls, v: str | None) -> str | None:
         """Validate locale_reference matches ObjectId format."""
         return _validate_object_id(v, "locale_reference")
 
     @field_validator("comment_color")
     @classmethod
-    def validate_comment_color(cls, v: Optional[str]) -> Optional[str]:
+    def validate_comment_color(cls, v: str | None) -> str | None:
         """Validate comment_color is a valid hex color or CSS color name."""
         return _validate_comment_color(v)
 
@@ -472,7 +472,7 @@ class NodeMove(CognigyCreateUpdateModel):
         ...,
         description="Placement mode: append, prepend, appendChild, prependChild, insertChildAt, insertAfter, insertBefore",
     )
-    position: Optional[int] = Field(
+    position: int | None = Field(
         None,
         ge=0,
         le=2147483647,
@@ -524,24 +524,24 @@ class NodeUpdate(CognigyCreateUpdateModel):
         mock: New mock configuration.
     """
 
-    label: Optional[str] = Field(None, description="New display label")
-    comment: Optional[str] = Field(None, description="New comment text")
-    comment_color: Optional[str] = Field(
+    label: str | None = Field(None, description="New display label")
+    comment: str | None = Field(None, description="New comment text")
+    comment_color: str | None = Field(
         None, alias="commentColor", description="New comment color (hex or CSS color name)"
     )
-    is_entry_point: Optional[bool] = Field(
+    is_entry_point: bool | None = Field(
         None, alias="isEntryPoint", description="New entry point status"
     )
-    is_disabled: Optional[bool] = Field(None, alias="isDisabled", description="New disabled status")
-    config: Optional[dict[str, Any]] = Field(None, description="New node configuration")
-    analytics_label: Optional[str] = Field(
+    is_disabled: bool | None = Field(None, alias="isDisabled", description="New disabled status")
+    config: dict[str, Any] | None = Field(None, description="New node configuration")
+    analytics_label: str | None = Field(
         None, alias="analyticsLabel", description="New analytics label"
     )
-    mock: Optional[NodeMock] = Field(None, description="New mock configuration")
+    mock: NodeMock | None = Field(None, description="New mock configuration")
 
     @field_validator("comment_color")
     @classmethod
-    def validate_comment_color(cls, v: Optional[str]) -> Optional[str]:
+    def validate_comment_color(cls, v: str | None) -> str | None:
         """Validate comment_color is a valid hex color or CSS color name."""
         return _validate_comment_color(v)
 
@@ -567,26 +567,26 @@ class ChartNodeSummary(CognigyBaseModel):
         is_disabled: Whether node is disabled.
     """
 
-    type: Optional[str] = Field(None, description="Type identifier of the node")
-    reference_id: Optional[str] = Field(
+    type: str | None = Field(None, description="Type identifier of the node")
+    reference_id: str | None = Field(
         None, alias="referenceId", description="UUID reference for the node"
     )
-    extension: Optional[str] = Field(None, description="Extension package providing this node type")
-    label: Optional[str] = Field(None, description="Custom display label")
-    analytics_label: Optional[str] = Field(
+    extension: str | None = Field(None, description="Extension package providing this node type")
+    label: str | None = Field(None, description="Custom display label")
+    analytics_label: str | None = Field(
         None, alias="analyticsLabel", description="Label for analytics"
     )
-    comment: Optional[str] = Field(None, description="Additional notes about the node")
-    comment_color: Optional[str] = Field(
+    comment: str | None = Field(None, description="Additional notes about the node")
+    comment_color: str | None = Field(
         None, alias="commentColor", description="Color for comment display"
     )
-    is_collapsed: Optional[bool] = Field(
+    is_collapsed: bool | None = Field(
         None, alias="isCollapsed", description="Whether node is collapsed in editor"
     )
-    is_entry_point: Optional[bool] = Field(
+    is_entry_point: bool | None = Field(
         None, alias="isEntryPoint", description="Whether node is an entry point"
     )
-    is_disabled: Optional[bool] = Field(
+    is_disabled: bool | None = Field(
         None, alias="isDisabled", description="Whether node is disabled"
     )
 
@@ -604,21 +604,21 @@ class ChartRelation(CognigyBaseModel):
         next: ObjectId of the next sibling node (nullable).
     """
 
-    node: Optional[str] = Field(None, description="ObjectId of the node this relation describes")
+    node: str | None = Field(None, description="ObjectId of the node this relation describes")
     children: list[str] = Field(
         default_factory=list, description="List of ObjectIds of child nodes"
     )
-    next: Optional[str] = Field(None, description="ObjectId of the next sibling node (nullable)")
+    next: str | None = Field(None, description="ObjectId of the next sibling node (nullable)")
 
     @field_validator("node")
     @classmethod
-    def validate_node(cls, v: Optional[str]) -> Optional[str]:
+    def validate_node(cls, v: str | None) -> str | None:
         """Validate node matches ObjectId format."""
         return _validate_object_id(v, "node")
 
     @field_validator("next")
     @classmethod
-    def validate_next(cls, v: Optional[str]) -> Optional[str]:
+    def validate_next(cls, v: str | None) -> str | None:
         """Validate next matches ObjectId format."""
         return _validate_object_id(v, "next")
 
