@@ -4,6 +4,7 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/cognigy-api-client)](https://pypi.org/project/cognigy-api-client/)
 [![License: MIT](https://img.shields.io/github/license/TheHenkelmann/cognigy-api-client)](LICENSE)
 [![CI](https://img.shields.io/github/actions/workflow/status/TheHenkelmann/cognigy-api-client/ci.yml?branch=master)](https://github.com/TheHenkelmann/cognigy-api-client/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/TheHenkelmann/cognigy-api-client/branch/master/graph/badge.svg)](https://codecov.io/gh/TheHenkelmann/cognigy-api-client)
 [![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue)](https://github.com/TheHenkelmann/cognigy-api-client)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
