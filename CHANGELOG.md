@@ -42,5 +42,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Test suite with pytest across Python 3.9–3.13
 - Published on [PyPI](https://pypi.org/project/cognigy-api-client/) as `cognigy-api-client`
 
+## [0.1.2] - 2026-06-25
+
+### Added
+
+- Mock-HTTP integration tests for flows, AI agents, knowledge stores, and search resources
+- Pydantic validator tests for ObjectId and timestamp boundaries on core domain models
+
+### Changed
+
+- Raised minimum coverage threshold to 59% (targeted tests; large resource modules intentionally excluded)
+
+[0.1.2]: https://github.com/TheHenkelmann/cognigy-api-client/releases/tag/v0.1.2
 [0.1.1]: https://github.com/TheHenkelmann/cognigy-api-client/releases/tag/v0.1.1
 [0.1.0]: https://github.com/TheHenkelmann/cognigy-api-client/releases/tag/v0.1.0

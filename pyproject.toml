@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cognigy-api-client"
-version = "0.1.1"
+version = "0.1.2"
 description = "Strictly typed, unofficial Python SDK for the Cognigy.AI REST API — sync/async clients, Pydantic v2, and full resource coverage."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -71,7 +71,7 @@ branch = true
 [tool.coverage.report]
 show_missing = true
 skip_covered = false
-fail_under = 55
+fail_under = 59
 
 [tool.ruff]
 target-version = "py39"
